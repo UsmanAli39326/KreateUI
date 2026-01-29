@@ -1,0 +1,68 @@
+@import "tailwindcss";
+
+/* ================================
+   Design Tokens — Tailwind v4
+   ================================ */
+@theme {
+  /* ---------- Brand ---------- */
+  --color-primary: #2c097f;
+  --color-accent-1: #4b1fbf;
+  --color-accent-hover: #5c2ed4;
+  --color-accent-3: #23065c;
+
+  /* ---------- Backgrounds ---------- */
+  --color-background-dark: #151022;   /* App background */
+  --color-bg-0: #0f0b1a;              /* deepest */
+  --color-bg-1: #151022;              /* default */
+  --color-bg-2: #1a132b;              /* elevated */
+  --color-bg-3: #201736;              /* hover */
+
+  /* ---------- Surfaces / Cards ---------- */
+  --color-surface-1: #1f1733;
+  --color-surface-2: #261c40;
+  --color-surface-3: #2e2250;
+
+  /* ---------- Borders ---------- */
+  --color-border-1: #2a2140;
+  --color-border-2: #362b57;
+  --color-border-3: #42336d;
+
+  /* ---------- Text ---------- */
+  --color-text-1: #ffffff;            /* primary text */
+  --color-text-2: #d6d3e5;            /* secondary */
+  --color-text-3: #9e97b8;            /* muted */
+  --color-text-disabled: #6f688a;
+
+  /* ---------- Status ---------- */
+  --color-success: #22c55e;
+  --color-success-bg: #16a34a1a;
+
+  --color-warning: #facc15;
+  --color-warning-bg: #eab3081a;
+
+  --color-danger: #ef4444;
+  --color-danger-bg: #dc26261a;
+
+  /* ---------- Focus / Rings ---------- */
+  --color-ring-primary: #5c2ed4;
+  --color-ring-danger: #ef4444;
+
+  /* ---------- Typography ---------- */
+  --font-display: "Inter", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+
+  /* ---------- Radius ---------- */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+}
+
+/* ================================
+   Base styles
+   ================================ */
+body {
+  font-family: var(--font-display);
+  background-color: var(--color-background-dark);
+  color: var(--color-text-2);
+}
