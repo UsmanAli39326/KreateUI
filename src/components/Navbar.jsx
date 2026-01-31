@@ -1,19 +1,38 @@
 import { useState } from "react";
 import { Button, Drawer } from "../components/Common";
-import { useNavigate,Link } from "react-router-dom";
-
+import { useNavigate, Link } from "react-router-dom";
 
 export default function Navbar() {
   const links = [
-    { label: "About", href: "/about" },
-    { label: "Contact Us", href: "/contact" },
-    { label: "Marketplace", href: "#marketplace" },
-    { label: "Pricing", href: "#pricing" },
+    { label: "About", href: "/about", type: "route" },
+    { label: "Contact Us", href: "/contact", type: "route" },
+    { label: "Marketplace", href: "#marketplace", type: "hash" },
+    { label: "Pricing", href: "#pricing", type: "hash" },
   ];
 
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
 
+  const renderNavItem = (item) =>
+    item.type === "route" ? (
+      <Link
+        key={item.label}
+        to={item.href}
+        className="hover:text-primary transition-colors"
+        onClick={() => setOpen(false)} // closes drawer when used there
+      >
+        {item.label}
+      </Link>
+    ) : (
+      <a
+        key={item.label}
+        href={item.href}
+        className="hover:text-primary transition-colors"
+        onClick={() => setOpen(false)} // closes drawer when used there
+      >
+        {item.label}
+      </a>
+    );
 
   return (
     <>
@@ -31,15 +50,7 @@ export default function Navbar() {
 
           {/* Desktop Links */}
           <div className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-400">
-            {links.map((item) => (
-              <Link
-                key={item.label}
-                to={item.href}
-                className="hover:text-primary transition-colors"
-              >
-                {item.label}
-              </Link>
-            ))}
+            {links.map(renderNavItem)}
           </div>
 
           {/* Right actions */}
@@ -49,10 +60,7 @@ export default function Navbar() {
                 variant="main"
                 size="sm"
                 className="text-white hover:text-primary"
-                onClick={() => {
-                  // TODO: navigate to /auth
-                  navigate("/auth");
-                }}
+                onClick={() => navigate("/auth")}
               >
                 Sign In
               </Button>
@@ -60,10 +68,7 @@ export default function Navbar() {
               <Button
                 variant="secondary"
                 size="sm"
-                onClick={() => {
-                  // TODO: navigate to /get-started
-                  navigate("/dashboard");
-                }}
+                onClick={() => navigate("/dashboard")}
               >
                 Get Started
               </Button>
@@ -78,7 +83,6 @@ export default function Navbar() {
               onClick={() => setOpen(true)}
               icon={<span className="material-symbols-outlined">menu</span>}
             >
-              {/* keep children for Button layout; visually hide */}
               <span className="sr-only">Menu</span>
             </Button>
           </div>
@@ -94,16 +98,7 @@ export default function Navbar() {
         className="w-[320px] sm:w-95"
       >
         <div className="flex flex-col gap-2">
-          {links.map((item) => (
-            <Link
-              key={item.label}
-              href={item.href}
-              onClick={() => setOpen(false)}
-              className="px-3 py-2 rounded-lg text-sm font-medium text-text-2 hover:bg-white/5 hover:text-text-1 transition"
-            >
-              {item.label}
-            </Link>
-          ))}
+          {links.map(renderNavItem)}
 
           <div className="mt-4 pt-4 border-t border-border-2 flex flex-col gap-2">
             <Button
