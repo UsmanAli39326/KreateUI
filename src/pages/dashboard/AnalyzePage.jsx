@@ -8,7 +8,7 @@ import QuickOptions from "@/components/Dashboard/QuickOptions";
 import RecentScans from "@/components/Dashboard/RecentScans";
 
 
-import initialScans from "@/assets/api/recentScans.json";
+import initialScans from "@/assets/api/RecentScans.json";
 import defaultOptions from "@/assets/api/defaultOptions.json";
 
 function isValidUrlLike(v) {
@@ -22,7 +22,7 @@ export default function AnalyzeDashboard() {
   const [url, setUrl] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [options, setOptions] = useState(defaultOptions);
-  const [scans, setScans] = useState(initialScans);
+  const [scans] = useState(initialScans);
 
   const breadcrumbs = useMemo(
     () => [{ label: "Workspace", href: "/dashboard" }, { label: "Analyze Website" }],
