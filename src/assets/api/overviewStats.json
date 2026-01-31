@@ -1,0 +1,24 @@
+{
+    "accessibilityScore": {
+        "value": 84.2,
+        "trend": 2.5,
+        "trendDirection": "up",
+        "lastUpdated": "12 mins ago"
+    },
+    "totalIssues": {
+        "value": 1240,
+        "trend": 12,
+        "trendDirection": "down",
+        "breakdown": [
+            35,
+            25,
+            20,
+            20
+        ]
+    },
+    "pendingRecommendations": {
+        "value": 42,
+        "badge": "AI Ready",
+        "criticalFixes": 12
+    }
+}

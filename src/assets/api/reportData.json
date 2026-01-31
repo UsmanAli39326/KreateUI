@@ -1,0 +1,63 @@
+{
+    "stats": {
+        "overall": {
+            "score": 84,
+            "trend": 2.4
+        },
+        "levelA": {
+            "score": 92,
+            "status": "Healthy"
+        },
+        "levelAA": {
+            "score": 78,
+            "status": "Needs attention",
+            "trend": -0.5
+        },
+        "levelAAA": {
+            "score": 45,
+            "status": "Optional optimization"
+        }
+    },
+    "audit": [
+        {
+            "id": "1.1.1",
+            "criterion": "Non-text Content",
+            "description": "12 decorative images missing null alt text; 2 functional icons missing labels.",
+            "level": "A",
+            "status": "Fail",
+            "impact": "Serious"
+        },
+        {
+            "id": "1.4.3",
+            "criterion": "Contrast (Minimum)",
+            "description": "Text elements maintain at least 4.5:1 ratio across the dashboard.",
+            "level": "AA",
+            "status": "Pass",
+            "impact": "Critical"
+        },
+        {
+            "id": "2.1.1",
+            "criterion": "Keyboard",
+            "description": "Mobile hamburger menu is not reachable via Tab key or keyboard shortcuts.",
+            "level": "A",
+            "status": "Fail",
+            "impact": "Critical"
+        },
+        {
+            "id": "2.4.7",
+            "criterion": "Focus Visible",
+            "description": "Custom button components lack high-visibility focus indicator.",
+            "level": "AA",
+            "status": "Review",
+            "impact": "Moderate"
+        },
+        {
+            "id": "3.1.1",
+            "criterion": "Language of Page",
+            "description": "HTML lang attribute is correctly set to \"en\".",
+            "level": "A",
+            "status": "Pass",
+            "impact": "Minor"
+        }
+    ]
+}

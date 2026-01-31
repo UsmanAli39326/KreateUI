@@ -1,0 +1,72 @@
+{
+    "id": "issue-42",
+    "title": "Insufficient Color Contrast on Primary CTA",
+    "severity": "critical",
+    "detectedAt": "2 mins ago",
+    "description": "WCAG 2.1 Level AA Success Criterion 1.4.3 requires a contrast ratio of at least 4.5:1.",
+    "url": "https://app.example.com/pricing",
+    "browser": "Chrome 121.0 / MacOS Sonoma",
+    "selector": "button.cta-primary",
+    "technical": {
+        "measuredRatio": "2.14 : 1",
+        "requiredRatio": "4.50 : 1",
+        "elementType": "button.cta-primary",
+        "detectedVia": "AI Vision Pro"
+    },
+    "recommendation": "The current combination of #2E2E35 and #9CA3AF fails to meet legibility standards for users with moderate vision impairment. Using the brand primary color with white text increases the ratio to 4.63:1, clearing Level AA requirements.",
+    "visual": {
+        "before": {
+            "bgColor": "#2E2E35",
+            "textColor": "#9CA3AF",
+            "ratio": "2.1:1"
+        },
+        "after": {
+            "bgColor": "#8e52ff",
+            "textColor": "#FFFFFF",
+            "ratio": "4.6:1"
+        }
+    },
+    "code": {
+        "file": "src/components/Newsletter.tsx",
+        "preview": [
+            {
+                "line": 12,
+                "content": "<button className=\"flex items-center justify-center\""
+            },
+            {
+                "line": 13,
+                "content": "  style={{"
+            },
+            {
+                "line": 14,
+                "content": "    backgroundColor: \"#2E2E35\", /* Change to #8e52ff */",
+                "highlight": true,
+                "type": "remove"
+            },
+            {
+                "line": 15,
+                "content": "    color: \"#9CA3AF\" /* Change to #FFFFFF */",
+                "highlight": true,
+                "type": "remove"
+            },
+            {
+                "line": 16,
+                "content": "  }}>"
+            },
+            {
+                "line": 17,
+                "content": "  Subscribe Now"
+            },
+            {
+                "line": 18,
+                "content": "</button>"
+            }
+        ]
+    },
+    "wcag": {
+        "spec": "WCAG 2.1 Spec",
+        "criterion": "Criterion 1.4.3 (Minimum)",
+        "description": "\"The visual presentation of text and images of text has a contrast ratio of at least 4.5:1, except for large-scale text and images of text which need 3:1.\"",
+        "link": "#"
+    }
+}

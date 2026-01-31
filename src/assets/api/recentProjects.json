@@ -1,0 +1,38 @@
+[
+    {
+        "id": "proj_1",
+        "name": "Acme Corporate Site",
+        "icon": "globe",
+        "score": 92,
+        "issuesCount": 12,
+        "lastScanned": "2 hours ago",
+        "status": "healthy"
+    },
+    {
+        "id": "proj_2",
+        "name": "Storefront 2.0",
+        "icon": "cart",
+        "score": 64,
+        "issuesCount": 342,
+        "lastScanned": "5 hours ago",
+        "status": "attention"
+    },
+    {
+        "id": "proj_3",
+        "name": "SaaS Dashboard",
+        "icon": "dashboard",
+        "score": 78,
+        "issuesCount": 56,
+        "lastScanned": "1 day ago",
+        "status": "healthy"
+    },
+    {
+        "id": "proj_4",
+        "name": "Mobile App Landing",
+        "icon": "phone",
+        "score": 45,
+        "issuesCount": 128,
+        "lastScanned": "3 days ago",
+        "status": "critical"
+    }
+]

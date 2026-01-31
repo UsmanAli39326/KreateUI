@@ -1,0 +1,172 @@
+{
+    "featured": {
+        "id": "lumina-system",
+        "title": "Lumina Design System",
+        "description": "The ultimate accessible design system for modern web apps. Fully documented, WCAG 2.1 compliant, and tested with multiple screen readers.",
+        "badges": [
+            "Editors Choice",
+            "Verified"
+        ],
+        "score": 99,
+        "stack": "Next.js + Tailwind",
+        "performance": "100/100 Lighthouse",
+        "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuCGXShlMmmsOJ4GcMxHB9YBEyTUQ0OsZl-8JZhzq3wlfFlRCI4C-8jBwqTDl1_TqRRHvFHDcjjbNXJO7efUkiF_WmxDWZi8giEV599GpVDmmTTXRNrLljRg1Vtn2MPgc_vLJlbrMf9XeQTq2ksURbVZtND8xfS-mO5Gdj7P5D2MSPCw41Th0oW6q0o-tfOal8fIY-kw7YG7GBDGUielUiRwTnTRad7jQCgHYEEvIZFlUWDluugQvq_WpQq7acn3hdFYHkmp4HSYOp0d",
+        "longDescription": "Lumina is a comprehensive design system built for scale. It includes over 50 accessible components, detailed documentation, and Figma assets. Perfect for enterprise applications requiring strict accessibility compliance.",
+        "features": [
+            "WCAG 2.1 AA Compliant",
+            "Dark Mode Support",
+            "Figma Kit Included",
+            "50+ UI Components"
+        ],
+        "price": "$129",
+        "version": "2.4.0",
+        "lastUpdated": "2 days ago"
+    },
+    "items": [
+        {
+            "id": "quantum-saas",
+            "title": "Quantum SaaS",
+            "author": "DesignAlpha",
+            "stack": [
+                "React 18",
+                "Framer Motion"
+            ],
+            "tech": "TypeScript",
+            "score": 98,
+            "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuD2dCIuFDZWkRVoPNuHho9em8gg_MPEBfD3o-dCbkChw7gR8drBf-pxtWHiPNvvqOzLsWNiZ6DHmuCQRHDXLP8X2Y5beVnwkJv0YZQdzOixZB1Ty_tpErmtCR8bCEqiXmqvluN19jUj6jiakYFkO3g1EzVk8uYbOTcwTlSluB3XWonGscXHhB5F3en6Fh2j4fVOBijLzOZoXUTpIK8smUMVyTJEf39QKHW38Qbxe0igITdI_5uCu21HZdoEQEICw8jn-dMkohCiVXcm",
+            "badge": "AI-Approved",
+            "description": "A modern, high-conversion SaaS landing page template with integrated authentication flow layouts.",
+            "features": [
+                "Conversion Optimized",
+                "Authentication Forms",
+                "Pricing Tables",
+                "Blog Section"
+            ],
+            "price": "$49",
+            "version": "1.0.5",
+            "lastUpdated": "1 week ago"
+        },
+        {
+            "id": "nexus-ecom",
+            "title": "Nexus E-com",
+            "author": "StoreFront",
+            "stack": [
+                "Shopify API",
+                "Tailwind"
+            ],
+            "tech": "Next.js",
+            "score": 95,
+            "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuD4ze9ehSHCIm7RgoKsg8wqbcDeZN7ESQNNcMzFM1pRVHfqNunrzamtZznSkT3i25-De9Zo-SI0j_JNIPo9FAGfEsFcP8n31tIiE1shhABp9cqWjnY38s682ySlUhLNSaFE4GAqtMgwi6QTO6oL21IZg2VOdEtg1yxOuzwgKv1OC2b-E1qmKFFKJIjk9mrXJWvTN5-D3YtspueB0hk1AoMZ-_7pePuYv897rJc7w1BjQnjTQsWuCa7dE7uVs2gkRp_Ec4jHaY4Km6ln",
+            "badge": "AI-Approved",
+            "description": "Headless e-commerce starter kit optimized for Core Web Vitals and SEO.",
+            "features": [
+                "Shopify Integration",
+                "SEO Best Practices",
+                "Cart & Checkout",
+                "ProductFiltering"
+            ],
+            "price": "$79",
+            "version": "3.1.0",
+            "lastUpdated": "3 days ago"
+        },
+        {
+            "id": "apex-portfolio",
+            "title": "Apex Portfolio",
+            "author": "MinimalStudio",
+            "stack": [
+                "MDX",
+                "GSAP"
+            ],
+            "tech": "Astro",
+            "score": 99,
+            "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuCVLQxlqY6S_4DKs87-h6Usf4eYz0_5z6zRfceek6KQD3dpL3kCRBg34lJBaQIDJMAUdzh-OnMs8272ZY4AprSI-gWkREmCqfkWF5SuvEAPfSikBhhFwjsLClZcHoxigAbwU79X-4SG0IoqUPmRojOHLlm-jvM4lIQI4DjX1cqxGVhhY8ynt1N5vWBzJqAJdJAQORgH7oVJ6VOR-mZyd_Mv185ao_B7XeIQgb4VncB90KwvmI0Q9alKyGnaoCxHbThA2BRfm0i5hOO3",
+            "badge": "AI-Approved",
+            "description": "Minimalist portfolio theme for developers and designers. Write content in Markdown.",
+            "features": [
+                "Zero JS Runtime",
+                "MDX Blog",
+                "Project Showcase",
+                "Dark/Light Theme"
+            ],
+            "price": "$29",
+            "version": "1.2.0",
+            "lastUpdated": "1 month ago"
+        },
+        {
+            "id": "vanguard-blog",
+            "title": "Vanguard Blog",
+            "author": "ContentFirst",
+            "stack": [
+                "Sanity CMS",
+                "Vanilla Extract"
+            ],
+            "tech": "Remix",
+            "score": 88,
+            "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuAxqKvqziN54tUSwdH0oWDdIVPiBIZEbEpELID8LlMmomZZMh2x8vgzTXT5eBEunzriFAGaw-NAqKePG_h6o4GgK6hw8vL7TawbNZWYOoV2CanqCabVrjA3kC9HhS0iChe4vcwjcki9JdrR1nCsPqRU0Hr5au41zc93C-CY_WeI7J9PcmZ1K2S-Pku71iPkMLaSnyTf4tbp35BnjH_QVGcPajIXwNhyWnfQmuCKquvm_7f-_A5UVwtphcAADLc320gS0zHkWrbTt_T0",
+            "badge": "AI-Approved",
+            "description": "High-performance blog template with Sanity Studio embedded.",
+            "features": [
+                "Real-time Preview",
+                "Structured Content",
+                "Authors & Categories",
+                "Newsletter Form"
+            ],
+            "price": "$59",
+            "version": "2.0.0",
+            "lastUpdated": "2 weeks ago"
+        },
+        {
+            "id": "horizon-admin",
+            "title": "Horizon Admin",
+            "author": "DataVis",
+            "stack": [
+                "Recharts",
+                "TanStack Table"
+            ],
+            "tech": "React",
+            "score": 94,
+            "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuCukR-KM3XYcIT6dBFjdz1BKioaPn-AV7ZJu4PtFO3Uvda2c6yXsQRs0yuh42a9iX-HI4dG_JZ6FCKr7TvbYAK7ukArdnUKaBAA1BKSal_aNPA2inHFLt5iFmkQL6sb7SULKW7KgJIBmph2tN7_N68Y5zx2lWzdaiNKDjNA0qGRhyl7ck-ojjlGdGiGH2HL5C8G2OLfepUJ6vn68cOoRI_qWMqMTXX4PjN3iHWS2fljh_99Dlh8UyfAYDFs3W80mxooCYUbZXqv9x-o",
+            "badge": "AI-Approved",
+            "description": "Admin dashboard with complex data visualization components and data tables.",
+            "features": [
+                "Data Grid",
+                "Charts Library",
+                "Authentication",
+                "Role Management"
+            ],
+            "price": "$89",
+            "version": "1.5.0",
+            "lastUpdated": "5 days ago"
+        },
+        {
+            "id": "stellar-landing",
+            "title": "Stellar Landing",
+            "author": "GrowthHack",
+            "stack": [
+                "Nuxt 3",
+                "UnoCSS"
+            ],
+            "tech": "Vue",
+            "score": 96,
+            "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuCZh_dZZte0OWlDCi0vm23-MVY0OBX3HkLFQv1WimOCgDWouxThJ8rTx34pDn21iJ1h3-qs1iQfSDz-hd-S3oTJe-Ij7OOJcRdWmZGlGVawbj_Krof017U7MAdcwyhixUo14Jrswfx6GDPSDgJAHkERRe8TYymmg4RIaMyjW00qAY__qZ-DSUPK1QmZTlv8JhujeOJbLGM5e0ynSLt58iNXzsGcD8VD1ttPsn__mYRo6KrhoP3x3tMaCDinx8_Jb_THhWcMMLRQaRqF",
+            "badge": "AI-Approved",
+            "description": "Startup landing page optimized for A/B testing and marketing campaigns.",
+            "features": [
+                "A/B Test Ready",
+                "Analytics Integration",
+                "Lead Capture",
+                "Responsive Design"
+            ],
+            "price": "$39",
+            "version": "1.1.2",
+            "lastUpdated": "1 week ago"
+        }
+    ],
+    "filters": [
+        "All Templates",
+        "E-commerce",
+        "SaaS Platforms",
+        "Dashboards",
+        "Portfolios"
+    ]
+}

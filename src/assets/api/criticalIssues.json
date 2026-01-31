@@ -1,0 +1,38 @@
+[
+    {
+        "id": "issue_1",
+        "level": "A",
+        "severity": "critical",
+        "title": "Missing alt text on images",
+        "location": "Marketing Dashboard • Homepage",
+        "icon": "error",
+        "timeAgo": "8 mins ago"
+    },
+    {
+        "id": "issue_2",
+        "level": "AA",
+        "severity": "high",
+        "title": "Low color contrast in footer",
+        "location": "E-commerce App • Checkout",
+        "icon": "contrast",
+        "timeAgo": "1 hr ago"
+    },
+    {
+        "id": "issue_3",
+        "level": "A",
+        "severity": "critical",
+        "title": "Broken keyboard navigation",
+        "location": "SaaS Portal • Profile Settings",
+        "icon": "keyboard",
+        "timeAgo": "3 hrs ago"
+    },
+    {
+        "id": "issue_4",
+        "level": "AAA",
+        "severity": "medium",
+        "title": "Ambiguous link purpose",
+        "location": "Marketing Page • Blog Feed",
+        "icon": "text",
+        "timeAgo": "5 hrs ago"
+    }
+]

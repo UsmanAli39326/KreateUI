@@ -1,10 +1,12 @@
 import React, { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import DashboardShell from "@/components/Dashboard/DashboardShell";
 import Breadcrumbs from "@/components/Dashboard/BreadCrumbs";
 import PageHeader from "@/components/Dashboard/PageHeader";
 import AnalyzeBar from "@/components/Dashboard/AnalyzeBar";
 import QuickOptions from "@/components/Dashboard/QuickOptions";
 import RecentScans from "@/components/Dashboard/RecentScans";
+
 
 import initialScans from "@/assets/api/recentScans.json";
 import defaultOptions from "@/assets/api/defaultOptions.json";
@@ -16,6 +18,7 @@ function isValidUrlLike(v) {
 }
 
 export default function AnalyzeDashboard() {
+  const navigate = useNavigate();
   const [url, setUrl] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [options, setOptions] = useState(defaultOptions);
@@ -33,38 +36,10 @@ export default function AnalyzeDashboard() {
 
     setIsAnalyzing(true);
 
-    const id = `scan_${Date.now()}`;
     const normalized = url.replace(/^https?:\/\//, "");
 
-    const newRow = {
-      id,
-      url: normalized,
-      scannedAt: null,
-      issuesCount: null,
-      status: "processing",
-      faviconColor: "#8e52ff",
-      optionsUsed: { ...options } // reusable later for scan details/report
-    };
-
-    setScans((prev) => [newRow, ...prev]);
-
-    // simulate completion (replace later with API)
-    window.setTimeout(() => {
-      setScans((prev) =>
-        prev.map((s) =>
-          s.id === id
-            ? {
-                ...s,
-                status: "completed",
-                scannedAt: new Date().toISOString(),
-                issuesCount: Math.floor(6 + Math.random() * 18),
-              }
-            : s
-        )
-      );
-      setIsAnalyzing(false);
-      setUrl("");
-    }, 1200);
+    // Navigate to the in-progress page with URL as query param
+    navigate(`/dashboard/analyze/progress?url=${encodeURIComponent(normalized)}`);
   };
 
   return (
@@ -90,3 +65,4 @@ export default function AnalyzeDashboard() {
     </DashboardShell>
   );
 }
+

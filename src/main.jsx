@@ -6,35 +6,42 @@ import "./index.css";
 import Layout from "./layout.jsx";
 import App from "./App.jsx";
 import Login from "./pages/auth/Login.jsx";
-import DashboardPage from "./pages/dashboard/DashboardPage.jsx";
+import OverviewPage from "./pages/dashboard/OverviewPage.jsx";
+import AnalyzePage from "./pages/dashboard/AnalyzePage.jsx";
+import AnalyzeInProgressPage from "./pages/dashboard/AnalyzeInProgressPage.jsx";
+import AnalysisResultsPage from "./pages/dashboard/AnalysisResultsPage.jsx";
+import FixIssuePage from "./pages/dashboard/FixIssuePage.jsx";
+import ReportsPage from "./pages/dashboard/ReportsPage.jsx";
+import SettingsPage from "./pages/dashboard/SettingsPage.jsx";
 import AboutContent from "./pages/About.jsx";
 import ContactPageContent from "./pages/ContactPage.jsx";
-
+import MarketplacePage from "./pages/MarketplacePage.jsx";
+import TemplateDetailPage from "./pages/TemplateDetailPage.jsx";
+import PricingPage from "./pages/PricingPage.jsx";
 
 const SignUpPage = React.lazy(() => import("./pages/auth/SignUpPage.jsx"));
 
 const router = createBrowserRouter([
-  // ─────────────────────
   // Routes WITH Layout
-  // ─────────────────────
   {
     element: <Layout />,
     children: [
       { path: "/", element: <App /> },
       { path: "/about", element: <AboutContent /> },
       { path: "/contact", element: <ContactPageContent /> },
+      { path: "/marketplace", element: <MarketplacePage /> },
+      { path: "/marketplace/:templateId", element: <TemplateDetailPage /> },
+      { path: "/pricing", element: <PricingPage /> },
       // add more app pages here
     ],
   },
 
-  // ─────────────────────
   // Routes WITHOUT Layout
-  // ─────────────────────
   {
     path: "/auth",
     element: <Login />,
-  }, {
-
+  },
+  {
     path: "/signup",
     element: (
       <React.Suspense fallback={<div>Loading...</div>}>
@@ -44,13 +51,32 @@ const router = createBrowserRouter([
   },
   {
     path: "/dashboard",
-    element: (
-      <React.Suspense fallback={<div>Loading...</div>}>
-        <DashboardPage />
-      </React.Suspense>
-    ),
-  }
-
+    element: <OverviewPage />,
+  },
+  {
+    path: "/dashboard/analyze",
+    element: <AnalyzePage />,
+  },
+  {
+    path: "/dashboard/analyze/progress",
+    element: <AnalyzeInProgressPage />,
+  },
+  {
+    path: "/dashboard/analyze/results",
+    element: <AnalysisResultsPage />,
+  },
+  {
+    path: "/dashboard/fix",
+    element: <FixIssuePage />,
+  },
+  {
+    path: "/dashboard/reports",
+    element: <ReportsPage />,
+  },
+  {
+    path: "/dashboard/settings",
+    element: <SettingsPage />,
+  },
 ]);
 
 ReactDOM.createRoot(document.getElementById("root")).render(
@@ -58,3 +84,4 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     <RouterProvider router={router} />
   </React.StrictMode>
 );
+

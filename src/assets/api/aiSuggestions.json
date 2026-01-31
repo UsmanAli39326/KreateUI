@@ -1,0 +1,59 @@
+{
+    "projectInfo": {
+        "name": "Acme_SaaS_Landing",
+        "url": "https://acme-staging.vercel.app",
+        "metrics": {
+            "improvements": 12,
+            "categories": [
+                "Typography",
+                "Spacing",
+                "Accessibility"
+            ]
+        }
+    },
+    "suggestions": [
+        {
+            "category": "Typography",
+            "icon": "text_fields",
+            "items": [
+                {
+                    "id": "typ-1",
+                    "title": "Increase body line-height",
+                    "description": "1.2 → 1.5 for better readability",
+                    "applied": true
+                },
+                {
+                    "id": "typ-2",
+                    "title": "Heading Weights",
+                    "description": "Increase H1 weight to 700",
+                    "applied": false
+                }
+            ]
+        },
+        {
+            "category": "Spacing",
+            "icon": "space_bar",
+            "items": [
+                {
+                    "id": "spc-1",
+                    "title": "Grid Consistency",
+                    "description": "Standardize 32px gap in features",
+                    "applied": true
+                }
+            ]
+        },
+        {
+            "category": "Contrast & Accessibility",
+            "icon": "visibility",
+            "items": [
+                {
+                    "id": "acc-1",
+                    "title": "Footer Contrast",
+                    "description": "Current 3.2:1 → Required 4.5:1",
+                    "severity": "Critical",
+                    "applied": true
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,7 @@
+[
+  { "id": "dashboard", "label": "Dashboard", "href": "/dashboard", "icon": "grid" },
+  { "id": "analyze", "label": "Analyze", "href": "/dashboard/analyze", "icon": "search" },
+  { "id": "projects", "label": "Projects", "href": "/dashboard/projects", "icon": "layers" },
+  { "id": "reports", "label": "Reports", "href": "/dashboard/reports", "icon": "file" },
+  { "id": "settings", "label": "Settings", "href": "/dashboard/settings", "icon": "settings" }
+]

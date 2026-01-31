@@ -1,0 +1,26 @@
+[
+  {
+    "id": "scan_1",
+    "url": "stripe.com/checkout",
+    "scannedAt": "2023-10-24T14:32:00Z",
+    "issuesCount": 12,
+    "status": "completed",
+    "faviconColor": "#3b82f6"
+  },
+  {
+    "id": "scan_2",
+    "url": "vercel.com/dashboard",
+    "scannedAt": "2023-10-23T09:12:00Z",
+    "issuesCount": 8,
+    "status": "completed",
+    "faviconColor": "#111827"
+  },
+  {
+    "id": "scan_3",
+    "url": "github.com/settings",
+    "scannedAt": null,
+    "issuesCount": null,
+    "status": "processing",
+    "faviconColor": "#f97316"
+  }
+]
