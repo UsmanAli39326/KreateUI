@@ -1,0 +1,79 @@
+[
+    {
+        "id": "proj_1",
+        "name": "Acme Corporate Site",
+        "url": "acme-corp.com",
+        "framework": "Next.js",
+        "icon": "globe",
+        "score": 92,
+        "issuesCount": 12,
+        "lastScanned": "2 hours ago",
+        "status": "healthy"
+    },
+    {
+        "id": "proj_2",
+        "name": "Storefront 2.0",
+        "url": "store.acme.com",
+        "framework": "Shopify",
+        "icon": "shopping_cart",
+        "score": 64,
+        "issuesCount": 342,
+        "lastScanned": "5 hours ago",
+        "status": "attention"
+    },
+    {
+        "id": "proj_3",
+        "name": "SaaS Dashboard",
+        "url": "app.saasflow.io",
+        "framework": "React",
+        "icon": "dashboard",
+        "score": 78,
+        "issuesCount": 56,
+        "lastScanned": "1 day ago",
+        "status": "healthy"
+    },
+    {
+        "id": "proj_4",
+        "name": "Mobile App Landing",
+        "url": "get.mobileapp.com",
+        "framework": "Astro",
+        "icon": "smartphone",
+        "score": 45,
+        "issuesCount": 128,
+        "lastScanned": "3 days ago",
+        "status": "critical"
+    },
+    {
+        "id": "proj_5",
+        "name": "Documentation Portal",
+        "url": "docs.acme.com",
+        "framework": "Docusaurus",
+        "icon": "article",
+        "score": 98,
+        "issuesCount": 3,
+        "lastScanned": "1 week ago",
+        "status": "healthy"
+    },
+    {
+        "id": "proj_6",
+        "name": "Internal Tools",
+        "url": "tools.int.acme.com",
+        "framework": "Vue 3",
+        "icon": "construction",
+        "score": 82,
+        "issuesCount": 24,
+        "lastScanned": "2 weeks ago",
+        "status": "healthy"
+    },
+    {
+        "id": "proj_7",
+        "name": "Legacy Blog",
+        "url": "blog-old.acme.com",
+        "framework": "WordPress",
+        "icon": "history_edu",
+        "score": 55,
+        "issuesCount": 89,
+        "lastScanned": "1 month ago",
+        "status": "attention"
+    }
+]

@@ -46,6 +46,13 @@ function Icon({ name }) {
           <path d="M19.4 15a7.8 7.8 0 0 0 .1-2l2-1.2-2-3.5-2.3.7a7.7 7.7 0 0 0-1.7-1l-.3-2.4H9.8l-.3 2.4a7.7 7.7 0 0 0-1.7 1l-2.3-.7-2 3.5 2 1.2a7.8 7.8 0 0 0 .1 2l-2 1.2 2 3.5 2.3-.7c.5.4 1.1.8 1.7 1l.3 2.4h4.4l.3-2.4c.6-.2 1.2-.6 1.7-1l2.3.7 2-3.5-2-1.2z" />
         </svg>
       );
+    case "home":
+      return (
+        <svg {...common}>
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+          <path d="M9 22V12h6v10" />
+        </svg>
+      );
     default:
       return null;
   }
@@ -136,6 +143,14 @@ export default function Sidebar({ active, onClose }) {
             {settings.label}
           </NavLink>
         ) : null}
+
+        <NavLink
+          {...getLinkProps({ href: "/" })}
+          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-text-2 hover:bg-surface-2 hover:text-text-1 mt-auto"
+        >
+          <Icon name="home" />
+          Back to Home
+        </NavLink>
       </nav>
 
       {/* Upgrade */}
