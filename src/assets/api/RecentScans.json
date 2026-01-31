@@ -9,7 +9,7 @@
   },
   {
     "id": "scan_2",
-    "url": "vercel.com/dashboard",
+    "url": "google.com/dashboard",
     "scannedAt": "2023-10-23T09:12:00Z",
     "issuesCount": 8,
     "status": "completed",
