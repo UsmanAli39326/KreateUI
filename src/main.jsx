@@ -51,19 +51,19 @@ const router = createBrowserRouter([
     ],
   },
 
-  // // Routes WITHOUT Layout
-  // {
-  //   path: "/auth",
-  //   element: <Login />,
-  // },
-  // {
-  //   path: "/signup",
-  //   element: (
-  //     <React.Suspense fallback={<div>Loading...</div>}>
-  //       <SignUpPage />
-  //     </React.Suspense>
-  //   ),
-  // },
+  // Routes WITHOUT Layout
+  {
+    path: "/auth",
+    element: <Login />,
+  },
+  {
+    path: "/signup",
+    element: (
+      <React.Suspense fallback={<div>Loading...</div>}>
+        <SignUpPage />
+      </React.Suspense>
+    ),
+  },
   // {
   //   path: "/dashboard",
   //   element: <OverviewPage />,
