@@ -6,14 +6,12 @@ import Hero from "../components/LandingPage/Hero";
 
 export default function LandingPage() {
   return (
-    <div className="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 antialiased font-display">
+    <div className="bg-background-main text-text-2 antialiased font-[var(--font-body)]">
      <Hero/>
       <TrustedBy />
       <Features />
       <CodeDemo />
       <FinalCTA />
-
-      {/* <Footer /> */}
     </div>
   );
 }

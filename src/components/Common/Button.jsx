@@ -34,12 +34,12 @@ const Button = ({
     // Base classes
     const baseClasses = "inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium rounded-md cursor-pointer transition-all duration-150 border border-transparent outline-none select-none no-underline disabled:opacity-60 disabled:cursor-not-allowed disabled:pointer-events-none";
 
-    // Variant classes
+    // Variant classes — Ivory & Amber Modernist
     const variants = {
-        main: "bg-primary text-white enabled:hover:bg-accent-hover enabled:hover:text-white enabled:active:bg-accent-3 focus-visible:ring-3 focus-visible:ring-accent-3/50 disabled:opacity-50 disabled:cursor-not-allowed",
-        primary: "bg-accent-1 text-white hover:not-disabled:bg-accent-hover hover:not-disabled:shadow-lg active:not-disabled:bg-accent-3 active:not-disabled:translate-y-px focus-visible:ring-3 focus-visible:ring-accent-3/50",
-        secondary: "bg-surface-2 border-border-2 text-text-1 hover:not-disabled:bg-surface-3 hover:not-disabled:border-border-3 hover:not-disabled:text-white active:not-disabled:bg-bg-0 active:not-disabled:translate-y-px",
-        tertiary: "bg-transparent text-text-2 hover:not-disabled:bg-white/5 hover:not-disabled:text-text-1 active:not-disabled:bg-white/10",
+        main: "bg-primary text-white enabled:hover:bg-accent-hover enabled:active:bg-accent-3 focus-visible:ring-3 focus-visible:ring-primary/30 disabled:opacity-50 disabled:cursor-not-allowed",
+        primary: "bg-primary text-white hover:not-disabled:bg-accent-hover hover:not-disabled:shadow-lg active:not-disabled:bg-accent-3 active:not-disabled:translate-y-px focus-visible:ring-3 focus-visible:ring-primary/30",
+        secondary: "bg-white border-border-1 text-text-1 hover:not-disabled:bg-bg-2 hover:not-disabled:border-border-2 active:not-disabled:bg-bg-3 active:not-disabled:translate-y-px shadow-sm",
+        tertiary: "bg-transparent text-text-2 hover:not-disabled:bg-bg-2 hover:not-disabled:text-text-1 active:not-disabled:bg-bg-3",
         destructive: "bg-transparent border-danger text-danger hover:not-disabled:bg-danger hover:not-disabled:text-white active:not-disabled:bg-red-700"
     };
 
@@ -49,11 +49,6 @@ const Button = ({
         md: "h-10 px-4 text-base",
         lg: "h-12 px-6 text-lg"
     };
-
-    // Icon only adjustments (if children is empty or visually hidden, but here we assume standard button usage. 
-    // If strict icon-only support is needed, checking !children might be necessary, but usually handled by passing icon-only props or just size)
-    // The previous CSS had .btn-icon-only, but it wasn't explicitly used in the JS logic except maybe by consumer passing className.
-    // We'll trust the consumer or add a prop if needed. For now standard padding works well.
 
     const widthClass = fullWidth ? 'w-full' : '';
     const loadingClass = isLoading ? 'opacity-80' : '';
