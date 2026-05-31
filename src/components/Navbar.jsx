@@ -18,8 +18,8 @@ export default function Navbar() {
       <Link
         key={item.label}
         to={item.href}
-        className="hover:text-primary transition-colors"
-        onClick={() => setOpen(false)} // closes drawer when used there
+        className="text-text-2 hover:text-primary font-medium transition-colors"
+        onClick={() => setOpen(false)}
       >
         {item.label}
       </Link>
@@ -27,8 +27,8 @@ export default function Navbar() {
       <a
         key={item.label}
         href={item.href}
-        className="hover:text-primary transition-colors"
-        onClick={() => setOpen(false)} // closes drawer when used there
+        className="text-text-2 hover:text-primary font-medium transition-colors"
+        onClick={() => setOpen(false)}
       >
         {item.label}
       </a>
@@ -36,20 +36,17 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className="fixed top-0 w-full z-50 border-b border-white/5 backdrop-blur bg-black/80">
+      <nav className="fixed top-0 w-full z-50 border-b border-border-1 backdrop-blur-md bg-background-main/90">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           {/* Brand */}
           <Link to="/" className="flex items-center gap-3 min-w-0">
             <div className="shrink-0">
-              <img src="logo.jpeg" alt="Kreate UI Logo" className="w-12 h-12" />
+              <img src="/logo.png" alt="Kreate UI Logo" className="h-14 w-auto" />
             </div>
-            <span className="font-bold tracking-tight text-white truncate">
-              Kreate UI
-            </span>
           </Link>
 
           {/* Desktop Links */}
-          <div className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-400">
+          <div className="hidden md:flex items-center gap-8 text-sm">
             {links.map(renderNavItem)}
           </div>
 
@@ -57,16 +54,16 @@ export default function Navbar() {
           <div className="flex items-center gap-2 sm:gap-3">
             <div className="hidden sm:flex items-center gap-2">
               <Button
-                variant="main"
+                variant="tertiary"
                 size="sm"
-                className="text-white hover:text-primary"
-                onClick={() => navigate("/auth/login")}
+                className="text-navy font-semibold hover:text-primary"
+                onClick={() => navigate("/auth")}
               >
                 Sign In
               </Button>
 
               <Button
-                variant="secondary"
+                variant="primary"
                 size="sm"
                 onClick={() => navigate("/dashboard")}
               >
@@ -78,7 +75,7 @@ export default function Navbar() {
             <Button
               variant="secondary"
               size="sm"
-              className="md:hidden h-10 w-10 px-0 rounded-lg bg-white/5 border border-white/10 text-white hover:bg-white/10"
+              className="md:hidden h-10 w-10 px-0 rounded-lg bg-bg-2 border border-border-1 text-text-1 hover:bg-bg-3"
               aria-label="Open menu"
               onClick={() => setOpen(true)}
               icon={<span className="material-symbols-outlined">menu</span>}
@@ -100,12 +97,12 @@ export default function Navbar() {
         <div className="flex flex-col gap-2">
           {links.map(renderNavItem)}
 
-          <div className="mt-4 pt-4 border-t border-border-2 flex flex-col gap-2">
+          <div className="mt-4 pt-4 border-t border-border-1 flex flex-col gap-2">
             <Button
               variant="secondary"
               fullWidth
               onClick={() => {
-                navigate("/auth/login");
+                navigate("/auth");
                 setOpen(false);
               }}
             >

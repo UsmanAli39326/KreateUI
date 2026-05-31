@@ -29,13 +29,13 @@ export default function Features() {
   ];
 
   return (
-    <section className="py-16 sm:py-20 lg:py-24 relative overflow-hidden">
+    <section className="py-16 sm:py-20 lg:py-24 relative overflow-hidden bg-bg-1">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-3 sm:gap-4 mb-10 sm:mb-14 lg:mb-16">
-          <h2 className="text-white text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black tracking-tight max-w-[720px]">
+          <h2 className="text-text-1 text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-tight max-w-[720px] font-[var(--font-display)]">
             Engineered for Accessibility.
           </h2>
-          <p className="text-slate-400 text-base sm:text-lg max-w-[600px] leading-relaxed">
+          <p className="text-text-2 text-base sm:text-lg max-w-[600px] leading-relaxed">
             Move beyond manual testing with automated scans that understand your code architecture and intent.
           </p>
         </div>

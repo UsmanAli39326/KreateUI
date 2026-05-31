@@ -4,7 +4,7 @@ import Footer from "./components/Footer";
 
 export default function Layout() {
   return (
-    <div className="min-h-dvh bg-background-dark text-slate-100 antialiased">
+    <div className="min-h-dvh bg-background-main text-text-2 antialiased">
       <Navbar />
 
       {/* offset for fixed navbar height */}

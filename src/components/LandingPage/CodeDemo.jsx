@@ -1,39 +1,39 @@
 export default function CodeDemo() {
   return (
-    <section className="py-16 sm:py-20 lg:py-24 bg-background-dark overflow-hidden">
+    <section className="py-16 sm:py-20 lg:py-24 bg-background-main overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-[#171a21] rounded-3xl border border-white/10 overflow-hidden flex flex-col lg:flex-row">
+        <div className="bg-white rounded-3xl border border-border-1 overflow-hidden flex flex-col lg:flex-row shadow-ambient-lg">
           {/* Left */}
           <div className="flex-1 p-7 sm:p-10 lg:p-16 flex flex-col justify-center gap-6 sm:gap-8">
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white leading-tight">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-text-1 leading-tight font-[var(--font-display)]">
               Fix accessibility bugs in your CI/CD pipeline.
             </h2>
 
-            <p className="text-slate-400 text-base sm:text-lg leading-relaxed">
+            <p className="text-text-2 text-base sm:text-lg leading-relaxed">
               Why wait for production? UI Enhance AI integrates with your GitHub Actions and Vercel deployments
               to catch 100% of critical accessibility issues before they go live.
             </p>
 
             <div className="space-y-3 sm:space-y-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-slate-800 rounded-lg flex items-center justify-center">
-                  <span className="material-symbols-outlined text-white text-[20px]">terminal</span>
+                <div className="w-10 h-10 bg-accent-soft rounded-lg flex items-center justify-center">
+                  <span className="material-symbols-outlined text-primary text-[20px]">terminal</span>
                 </div>
-                <span className="text-slate-300 font-medium">CLI-First Workflow</span>
+                <span className="text-text-1 font-medium">CLI-First Workflow</span>
               </div>
 
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-slate-800 rounded-lg flex items-center justify-center">
-                  <span className="material-symbols-outlined text-white text-[20px]">alt_route</span>
+                <div className="w-10 h-10 bg-cat-sky rounded-lg flex items-center justify-center">
+                  <span className="material-symbols-outlined text-navy text-[20px]">alt_route</span>
                 </div>
-                <span className="text-slate-300 font-medium">Automatic Branching &amp; Fixes</span>
+                <span className="text-text-1 font-medium">Automatic Branching &amp; Fixes</span>
               </div>
             </div>
           </div>
 
-          {/* Right */}
-          <div className="flex-1 bg-[#090b0e] p-4 sm:p-6 lg:p-8 flex items-center justify-center">
-            <div className="w-full h-full min-h-[320px] sm:min-h-[400px] bg-[#1a1d23] rounded-xl border border-white/5 font-mono text-[12px] sm:text-sm p-4 sm:p-6 overflow-hidden shadow-2xl">
+          {/* Right — Code Terminal */}
+          <div className="flex-1 bg-navy-deep p-4 sm:p-6 lg:p-8 flex items-center justify-center">
+            <div className="w-full h-full min-h-[320px] sm:min-h-[400px] bg-[#0F1621] rounded-xl border border-white/10 font-mono text-[12px] sm:text-sm p-4 sm:p-6 overflow-hidden shadow-2xl">
               <div className="flex gap-2 mb-5 sm:mb-6 border-b border-white/10 pb-4">
                 <div className="w-3 h-3 rounded-full bg-red-500"></div>
                 <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
