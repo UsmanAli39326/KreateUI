@@ -1,0 +1,297 @@
+{
+    "id": "job-12345",
+    "url": "https://example.com",
+    "scannedAt": "2023-10-27T10:30:00Z",
+    "overallScore": 82,
+    "wcagScore": {
+        "total": 78,
+        "level": "AA",
+        "breakdown": {
+            "perceivable": 85,
+            "operable": 70,
+            "understandable": 90,
+            "robust": 65
+        }
+    },
+    "issues": [
+        {
+            "id": "issue-001",
+            "title": "Low Color Contrast on Buttons",
+            "description": "The 'Subscribe' button text does not meet WCAG AA requirements for contrast ratio.",
+            "severity": "critical",
+            "category": "accessibility",
+            "detectedAt": "2023-10-27T10:30:05Z",
+            "technical": {
+                "elementType": "button.cta-primary",
+                "measuredRatio": "2.8:1",
+                "requiredRatio": "4.5:1",
+                "detectedVia": "Color Contrast Analyzer"
+            },
+            "wcag": {
+                "spec": "WCAG 2.1",
+                "criterion": "1.4.3 Contrast (Minimum)",
+                "description": "The visual presentation of text and images of text has a contrast ratio of at least 4.5:1.",
+                "link": "https://www.w3.org/WAI/WCAG21/Understanding/contrast-minimum.html"
+            },
+            "recommendation": "Change the button background color to a darker shade or the text color to black.",
+            "code": {
+                "file": "src/components/SubscriptionForm.jsx",
+                "preview": [
+                    {
+                        "line": 42,
+                        "content": "<button"
+                    },
+                    {
+                        "line": 43,
+                        "content": "  className=\"bg-blue-500 text-white px-4 py-2\""
+                    },
+                    {
+                        "line": 44,
+                        "content": "  style={{ backgroundColor: '#3B82F6' }}",
+                        "highlight": true
+                    },
+                    {
+                        "line": 45,
+                        "content": ">"
+                    },
+                    {
+                        "line": 46,
+                        "content": "  Subscribe"
+                    },
+                    {
+                        "line": 47,
+                        "content": "</button>"
+                    }
+                ]
+            },
+            "visual": {
+                "before": {
+                    "bgColor": "#3B82F6",
+                    "textColor": "#FFFFFF",
+                    "ratio": "2.8:1"
+                },
+                "after": {
+                    "bgColor": "#1D4ED8",
+                    "textColor": "#FFFFFF",
+                    "ratio": "5.1:1"
+                }
+            }
+        },
+        {
+            "id": "issue-002",
+            "title": "Missing Alt Text on Images",
+            "description": "Several images in the hero section are missing 'alt' attributes.",
+            "severity": "high",
+            "category": "accessibility",
+            "detectedAt": "2023-10-27T10:30:05Z",
+            "technical": {
+                "elementType": "img.hero-image",
+                "measuredRatio": "N/A",
+                "requiredRatio": "N/A",
+                "detectedVia": "DOM Scanner"
+            },
+            "wcag": {
+                "spec": "WCAG 2.1",
+                "criterion": "1.1.1 Non-text Content",
+                "description": "All non-text content that is presented to the user has a text alternative that serves the equivalent purpose.",
+                "link": "https://www.w3.org/WAI/WCAG21/Understanding/non-text-content.html"
+            },
+            "recommendation": "Add descriptive alt text to the image explaining its content or function.",
+            "code": {
+                "file": "src/components/Hero.jsx",
+                "preview": [
+                    {
+                        "line": 15,
+                        "content": "<img"
+                    },
+                    {
+                        "line": 16,
+                        "content": "  src=\"/hero-banner.jpg\"",
+                        "highlight": true
+                    },
+                    {
+                        "line": 17,
+                        "content": "  className=\"w-full h-auto\""
+                    },
+                    {
+                        "line": 18,
+                        "content": "/>"
+                    }
+                ]
+            },
+            "visual": null
+        },
+        {
+            "id": "issue-003",
+            "title": "Form Label Missing",
+            "description": "The email input field does not have an associated label.",
+            "severity": "high",
+            "category": "accessibility",
+            "detectedAt": "2023-10-27T10:30:05Z",
+            "technical": {
+                "elementType": "input#email",
+                "measuredRatio": "N/A",
+                "requiredRatio": "N/A",
+                "detectedVia": "Form Validator"
+            },
+            "wcag": {
+                "spec": "WCAG 2.1",
+                "criterion": "3.3.2 Labels or Instructions",
+                "description": "Labels or instructions are provided when content requires user input.",
+                "link": "https://www.w3.org/WAI/WCAG21/Understanding/labels-or-instructions.html"
+            },
+            "recommendation": "Add a <label> element associated with the input or use 'aria-label'.",
+            "code": {
+                "file": "src/components/Contact.jsx",
+                "preview": [
+                    {
+                        "line": 20,
+                        "content": "<input"
+                    },
+                    {
+                        "line": 21,
+                        "content": "  type=\"email\"",
+                        "highlight": true
+                    },
+                    {
+                        "line": 22,
+                        "content": "  placeholder=\"Enter your email\""
+                    },
+                    {
+                        "line": 23,
+                        "content": "/>"
+                    }
+                ]
+            },
+            "visual": null
+        },
+        {
+            "id": "issue-004",
+            "title": "Interactive Element Too Small",
+            "description": "The close button on the modal is too small for easy tapping on mobile.",
+            "severity": "medium",
+            "category": "usability",
+            "detectedAt": "2023-10-27T10:30:05Z",
+            "technical": {
+                "elementType": "button.close-modal",
+                "measuredRatio": "24x24px",
+                "requiredRatio": "44x44px",
+                "detectedVia": "Mobile Tap Target Check"
+            },
+            "wcag": {
+                "spec": "WCAG 2.1",
+                "criterion": "2.5.5 Target Size",
+                "description": "The target size for pointer inputs is at least 44 by 44 CSS pixels.",
+                "link": "https://www.w3.org/WAI/WCAG21/Understanding/target-size.html"
+            },
+            "recommendation": "Increase the padding or size of the button to at least 44x44px.",
+            "code": {
+                "file": "src/components/Modal.jsx",
+                "preview": [
+                    {
+                        "line": 5,
+                        "content": "<button"
+                    },
+                    {
+                        "line": 6,
+                        "content": "  className=\"size-6\"",
+                        "highlight": true
+                    },
+                    {
+                        "line": 7,
+                        "content": ">"
+                    },
+                    {
+                        "line": 8,
+                        "content": "  x"
+                    },
+                    {
+                        "line": 9,
+                        "content": "</button>"
+                    }
+                ]
+            },
+            "visual": null
+        },
+        {
+            "id": "issue-005",
+            "title": "Large Layout Shift",
+            "description": "The hero image causes a significant layout shift when loading.",
+            "severity": "medium",
+            "category": "performance",
+            "detectedAt": "2023-10-27T10:30:05Z",
+            "technical": {
+                "elementType": "img.hero-image",
+                "measuredRatio": "0.45",
+                "requiredRatio": "<0.1",
+                "detectedVia": "Core Web Vitals"
+            },
+            "wcag": {
+                "spec": "Web Vitals",
+                "criterion": "CLS",
+                "description": "Cumulative Layout Shift should be less than 0.1.",
+                "link": "https://web.dev/cls/"
+            },
+            "recommendation": "Set explicit width and height attributes on the image element.",
+            "code": {
+                "file": "src/components/Hero.jsx",
+                "preview": [
+                    {
+                        "line": 15,
+                        "content": "<img"
+                    },
+                    {
+                        "line": 16,
+                        "content": "  src=\"/hero.jpg\"",
+                        "highlight": true
+                    }
+                ]
+            },
+            "visual": null
+        },
+        {
+            "id": "issue-006",
+            "title": "Insecure Link Target",
+            "description": "External link uses target='_blank' without rel='noopener noreferrer'.",
+            "severity": "low",
+            "category": "security",
+            "detectedAt": "2023-10-27T10:30:05Z",
+            "technical": {
+                "elementType": "a.external-link",
+                "measuredRatio": "N/A",
+                "requiredRatio": "N/A",
+                "detectedVia": "Security Scanner"
+            },
+            "wcag": {
+                "spec": "Security Best Practices",
+                "criterion": "Cross-origin",
+                "description": "Links to cross-origin destinations should be safe.",
+                "link": "https://web.dev/external-anchors-use-rel-noopener/"
+            },
+            "recommendation": "Add rel='noopener noreferrer' to the link.",
+            "code": {
+                "file": "src/components/Footer.jsx",
+                "preview": [
+                    {
+                        "line": 88,
+                        "content": "<a"
+                    },
+                    {
+                        "line": 89,
+                        "content": "  href=\"https://twitter.com\""
+                    },
+                    {
+                        "line": 90,
+                        "content": "  target=\"_blank\"",
+                        "highlight": true
+                    },
+                    {
+                        "line": 91,
+                        "content": ">"
+                    }
+                ]
+            },
+            "visual": null
+        }
+    ]
+}

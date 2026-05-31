@@ -53,7 +53,16 @@ export default function ReportsPage() {
                         <p className="text-text-2 text-lg">Comprehensive audit for accessibility & usability optimization</p>
                     </div>
                     <div className="flex gap-3">
-                        <Button variant="secondary" icon={<span className="material-symbols-outlined text-lg">download</span>}>
+                        <Link to="/dashboard/reports/history">
+                            <Button variant="secondary" icon={<span className="material-symbols-outlined text-lg">history</span>}>
+                                View History
+                            </Button>
+                        </Link>
+                        <Button
+                            variant="secondary"
+                            icon={<span className="material-symbols-outlined text-lg">download</span>}
+                            onClick={() => alert("Generating PDF Report...")}
+                        >
                             Export PDF
                         </Button>
                         <Button variant="primary" icon={<span className="material-symbols-outlined text-lg">refresh</span>} className="shadow-lg shadow-accent-1/20">
@@ -166,8 +175,8 @@ export default function ReportsPage() {
                                     </td>
                                     <td className="px-6 py-5 text-center">
                                         <span className={`text-xs font-bold ${row.impact === 'Critical' ? 'text-danger' :
-                                                row.impact === 'Serious' ? 'text-danger' :
-                                                    row.impact === 'Moderate' ? 'text-warning' : 'text-text-3'
+                                            row.impact === 'Serious' ? 'text-danger' :
+                                                row.impact === 'Moderate' ? 'text-warning' : 'text-text-3'
                                             }`}>{row.impact}</span>
                                     </td>
                                     <td className="px-6 py-5 text-right">

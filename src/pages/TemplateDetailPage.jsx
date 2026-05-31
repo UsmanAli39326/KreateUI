@@ -103,6 +103,14 @@ export default function TemplateDetailPage() {
 
                         <div className="space-y-3 mb-8">
                             <Button variant="primary" fullWidth size="lg">Get Template</Button>
+                            <Button
+                                variant="secondary"
+                                fullWidth
+                                icon={<span className="material-symbols-outlined">sync</span>}
+                                className="border-accent-1 text-accent-1 hover:bg-accent-1/10"
+                            >
+                                Sync to Site
+                            </Button>
                             <Button variant="secondary" fullWidth icon={<span className="material-symbols-outlined">desktop_windows</span>}>Live Preview</Button>
                         </div>
 

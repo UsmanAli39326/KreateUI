@@ -1,0 +1,73 @@
+{
+    "users": [
+        {
+            "id": "u1",
+            "name": "Alex Johnson",
+            "email": "alex@company.com",
+            "role": "admin",
+            "status": "active",
+            "lastActive": "2023-10-27T10:00:00Z"
+        },
+        {
+            "id": "u2",
+            "name": "Sarah Smith",
+            "email": "sarah@design.co",
+            "role": "user",
+            "status": "active",
+            "lastActive": "2023-10-26T15:30:00Z"
+        },
+        {
+            "id": "u3",
+            "name": "Mike Brown",
+            "email": "mike@badactor.com",
+            "role": "user",
+            "status": "locked",
+            "lastActive": "2023-10-20T09:15:00Z"
+        },
+        {
+            "id": "u4",
+            "name": "Emily Chen",
+            "email": "emily@startup.io",
+            "role": "user",
+            "status": "active",
+            "lastActive": "2023-10-27T11:45:00Z"
+        },
+        {
+            "id": "u5",
+            "name": "David Wilson",
+            "email": "david@freelance.net",
+            "role": "user",
+            "status": "active",
+            "lastActive": "2023-10-25T14:20:00Z"
+        }
+    ],
+    "submissions": [
+        {
+            "id": "sub-001",
+            "templateName": "Modern SaaS Landing",
+            "author": "Sarah Smith",
+            "submittedAt": "2023-10-27T08:30:00Z",
+            "category": "Marketing",
+            "previewUrl": "https://placeholder.co/600x400",
+            "status": "pending"
+        },
+        {
+            "id": "sub-002",
+            "templateName": "E-commerce Product Grid",
+            "author": "Emily Chen",
+            "submittedAt": "2023-10-26T16:45:00Z",
+            "category": "E-commerce",
+            "previewUrl": "https://placeholder.co/600x400",
+            "status": "pending"
+        },
+        {
+            "id": "sub-003",
+            "templateName": "Dark Mode Dashboard",
+            "author": "David Wilson",
+            "submittedAt": "2023-10-25T12:10:00Z",
+            "category": "Dashboard",
+            "previewUrl": "https://placeholder.co/600x400",
+            "status": "pending"
+        }
+    ]
+}

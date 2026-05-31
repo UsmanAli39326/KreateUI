@@ -1,9 +1,12 @@
 // src/pages/Auth/SignUp/SignUpFormCard.jsx
 import React, { useState } from "react";
 import { Button, Input, Card } from "../Common"
-import { Link, Navigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
-export default function SignUpFormCard({ onSubmit, onContinueGoogle, onContinueGithub }) {
+export default function SignUpFormCard({ onContinueGoogle, onContinueGithub }) {
+  const navigate = useNavigate();
+  const { signup } = useAuth();
   const [fullName, setFullName] = useState("");
   const [workEmail, setWorkEmail] = useState("");
   const [company, setCompany] = useState("");
@@ -11,9 +14,15 @@ export default function SignUpFormCard({ onSubmit, onContinueGoogle, onContinueG
   const [showPw, setShowPw] = useState(false);
   const [agree, setAgree] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onSubmit?.({ fullName, workEmail, company, password, agree });
+    try {
+      await signup(workEmail, password, fullName);
+      navigate("/dashboard");
+    } catch (error) {
+      console.error("Failed to create account", error);
+      alert("Failed to create account: " + error.message);
+    }
   };
 
   return (
@@ -128,9 +137,6 @@ export default function SignUpFormCard({ onSubmit, onContinueGoogle, onContinueG
             fullWidth
             isDisabled={!agree}
             iconRight={<span className="material-symbols-outlined text-[20px]">arrow_forward</span>}
-            onClick={()=>{
-                Navigate("/dashboard")
-            }}
           >
             Create Account
           </Button>
@@ -178,7 +184,7 @@ export default function SignUpFormCard({ onSubmit, onContinueGoogle, onContinueG
 
         <p className="text-center mt-8 text-sm text-text-3">
           Already a member?{" "}
-          <Link className="text-primary font-bold hover:underline" to="/auth">
+          <Link className="text-primary font-bold hover:underline" to="/auth/login">
             Log in to your account
           </Link>
         </p>

@@ -83,31 +83,41 @@ export default function AuthCard({
                         required
                     />
 
-                    <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                            <label
-                                htmlFor="password"
-                                className="text-sm font-medium text-gray-700 dark:text-text-secondary"
-                            >
-                                Password
-                            </label>
-                            <button
-                                type="button"
-                                onClick={onForgotPasswordClick}
-                                className="text-xs font-medium text-accent-1 cursor-pointer hover:underline"
-                            >
-                                Forgot password?
-                            </button>
-                        </div>
+                    <div className="flex items-center justify-between">
+                        <label
+                            htmlFor="password"
+                            className="text-sm font-medium text-gray-700 dark:text-text-secondary"
+                        >
+                            Password
+                        </label>
+                    </div>
 
-                        <Input
-                            id="password"
-                            type="password"
-                            placeholder="••••••••"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                        />
+                    <Input
+                        id="password"
+                        type="password"
+                        placeholder="••••••••"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                    />
+
+
+                    <div className="flex items-center justify-between">
+                        <label className="flex items-center">
+                            <input
+                                type="checkbox"
+                                className="h-4 w-4 text-accent-1 bg-surface-2 border-border-1 rounded focus:ring-accent-1 focus:ring-offset-0 cursor-pointer"
+                            />
+                            <span className="ml-2 text-sm text-gray-600 dark:text-text-2">Remember me</span>
+                        </label>
+
+                        <button
+                            type="button"
+                            onClick={onForgotPasswordClick}
+                            className="text-xs font-medium text-accent-1 cursor-pointer hover:underline"
+                        >
+                            Forgot password?
+                        </button>
                     </div>
 
                     <Button
@@ -115,10 +125,6 @@ export default function AuthCard({
                         variant="primary"
                         fullWidth
                         iconRight={<span className="material-symbols-outlined text-sm">login</span>}
-                        onClick={() => {
-                            navigate("/dashboard")
-                        }
-                        }
                     >
                         Sign In
                     </Button>
@@ -148,6 +154,6 @@ export default function AuthCard({
                     Secure infrastructure with enterprise-grade encryption
                 </p>
             </div>
-        </div>
+        </div >
     );
 }

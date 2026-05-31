@@ -27,7 +27,6 @@ function TemplateCard({ item }) {
                         <p className="text-xs text-text-3">by {item.author} • {item.tech}</p>
                     </div>
                     <div className="flex items-center gap-2">
-                        {/* Circular Score */}
                         <div className="relative flex items-center justify-center w-10 h-10">
                             <svg className="w-full h-full transform -rotate-90">
                                 <circle className="text-bg-2" cx="20" cy="20" fill="transparent" r="16" stroke="currentColor" strokeWidth="3"></circle>
@@ -38,7 +37,7 @@ function TemplateCard({ item }) {
                     </div>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                    {item.stack.map((stackItem, idx) => (
+                    {item.stack && item.stack.map((stackItem, idx) => (
                         <span key={idx} className="text-[10px] px-2 py-0.5 rounded bg-bg-2 text-text-3 border border-border-1">{stackItem}</span>
                     ))}
                 </div>
@@ -61,16 +60,26 @@ export default function MarketplacePage() {
                     <h1 className="text-3xl font-bold tracking-tight mb-2 text-text-1">High-Performance Templates</h1>
                     <p className="text-text-2 max-w-2xl">Discover AI-validated website templates optimized for accessibility, usability, and developer experience.</p>
                 </div>
-                {/* Search Input */}
-                <div className="relative max-w-md w-full">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <span className="material-symbols-outlined text-text-3 text-sm">search</span>
+                <div className="flex flex-col sm:flex-row gap-3">
+                    <Link to="/marketplace/submit">
+                        <Button
+                            variant="primary"
+                            icon={<span className="material-symbols-outlined">add</span>}
+                            className="shadow-lg shadow-accent-1/20"
+                        >
+                            Submit Template
+                        </Button>
+                    </Link>
+                    <div className="relative max-w-md w-full">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <span className="material-symbols-outlined text-text-3 text-sm">search</span>
+                        </div>
+                        <input
+                            className="block w-full pl-10 pr-3 py-2 border border-border-1 rounded-lg bg-surface-1 text-sm placeholder:text-text-3 focus:outline-none focus:ring-1 focus:ring-accent-1/50 focus:border-accent-1 transition-all text-text-1"
+                            placeholder="Search templates..."
+                            type="text"
+                        />
                     </div>
-                    <input
-                        className="block w-full pl-10 pr-3 py-2 border border-border-1 rounded-lg bg-surface-1 text-sm placeholder:text-text-3 focus:outline-none focus:ring-1 focus:ring-accent-1/50 focus:border-accent-1 transition-all text-text-1"
-                        placeholder="Search templates, components..."
-                        type="text"
-                    />
                 </div>
             </div>
 
@@ -80,7 +89,7 @@ export default function MarketplacePage() {
                     <button className="flex items-center gap-2 px-4 py-2 bg-accent-1 text-white rounded-lg text-sm font-medium whitespace-nowrap">
                         <span>All Templates</span>
                     </button>
-                    {filters.slice(1).map((filter) => (
+                    {filters && filters.slice(1).map((filter) => (
                         <button key={filter} className="flex items-center gap-2 px-4 py-2 bg-surface-1 border border-border-1 hover:border-accent-1 transition-colors rounded-lg text-sm font-medium whitespace-nowrap text-text-1">
                             <span>{filter}</span>
                             <span className="material-symbols-outlined text-xs">expand_more</span>
@@ -107,7 +116,7 @@ export default function MarketplacePage() {
                         />
                         <div className="absolute top-4 left-4 flex gap-2">
                             <span className="bg-accent-1/90 backdrop-blur-sm text-white text-[10px] font-bold px-2.5 py-1 rounded uppercase tracking-wider flex items-center gap-1">
-                                <span className="material-symbols-outlined text-xs">verified</span> {featured.badges[0]}
+                                <span className="material-symbols-outlined text-xs">verified</span> {featured.badges && featured.badges[0]}
                             </span>
                         </div>
                     </div>
@@ -153,7 +162,7 @@ export default function MarketplacePage() {
 
             {/* Template Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {items.map((item) => (
+                {items && items.map((item) => (
                     <TemplateCard key={item.id} item={item} />
                 ))}
             </div>
@@ -163,7 +172,7 @@ export default function MarketplacePage() {
                 <Button variant="secondary" icon={<span className="material-symbols-outlined">refresh</span>}>
                     Load More Templates
                 </Button>
-                <p className="text-sm text-text-3">Showing {items.length} of 1,248 available high-quality templates</p>
+                <p className="text-sm text-text-3">Showing {items ? items.length : 0} of 1,248 available high-quality templates</p>
             </div>
         </div>
     );

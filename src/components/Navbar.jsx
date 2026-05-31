@@ -60,7 +60,7 @@ export default function Navbar() {
                 variant="main"
                 size="sm"
                 className="text-white hover:text-primary"
-                onClick={() => navigate("/auth")}
+                onClick={() => navigate("/auth/login")}
               >
                 Sign In
               </Button>
@@ -105,7 +105,7 @@ export default function Navbar() {
               variant="secondary"
               fullWidth
               onClick={() => {
-                navigate("/auth");
+                navigate("/auth/login");
                 setOpen(false);
               }}
             >

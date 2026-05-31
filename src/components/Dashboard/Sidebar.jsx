@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 import nav from "@/assets/api/dashboardNavbar.json";
 import UpgradeCard from "@/components/Dashboard/UpgradeCard";
 
@@ -53,22 +54,36 @@ function Icon({ name }) {
           <path d="M9 22V12h6v10" />
         </svg>
       );
+    case "users":
+      return (
+        <svg {...common}>
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+        </svg>
+      );
+    case "shield":
+      return (
+        <svg {...common}>
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+        </svg>
+      );
     default:
       return null;
   }
 }
 
 export default function Sidebar({ active, onClose }) {
+  const { logout, isAdmin } = useAuth();
   const topItems = nav.filter((n) => n.id !== "settings");
   const settings = nav.find((n) => n.id === "settings");
 
-  const NavLink = onClose ? 'a' : Link;
-  const getLinkProps = (item) => {
-    if (onClose) {
-      return { href: item.href, onClick: () => onClose() };
-    }
-    return { to: item.href };
-  };
+  const linkClass = (isActive) =>
+    [
+      "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+      isActive ? "bg-accent-1/10 text-accent-1" : "text-text-2 hover:bg-surface-2 hover:text-text-1",
+    ].join(" ");
 
   return (
     <aside className="w-64 border-r border-border-1 flex flex-col h-screen bg-bg-1">
@@ -93,16 +108,14 @@ export default function Sidebar({ active, onClose }) {
         </div>
       ) : null}
 
-      {/* Brand (desktop + also visible inside drawer below mobile header) */}
+      {/* Brand */}
       <div className="p-6 flex items-center gap-3">
         <div className="size-8 bg-accent-1 rounded-lg flex items-center justify-center text-white">
           <span className="text-sm font-bold">AI</span>
         </div>
         <div className="flex flex-col">
           <h1 className="text-sm font-bold tracking-tight text-text-1">AI ENHANCE</h1>
-          <p className="text-[10px] text-text-3 font-medium uppercase tracking-widest">
-            Pro Workspace
-          </p>
+          <p className="text-[10px] text-text-3 font-medium uppercase tracking-widest">Pro Workspace</p>
         </div>
       </div>
 
@@ -111,46 +124,66 @@ export default function Sidebar({ active, onClose }) {
         {topItems.map((item) => {
           const isActive = item.id === active;
           return (
-            <NavLink
+            <Link
               key={item.id}
-              {...getLinkProps(item)}
-              className={[
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
-                isActive
-                  ? "bg-accent-1/10 text-accent-1"
-                  : "text-text-2 hover:bg-surface-2 hover:text-text-1",
-              ].join(" ")}
+              to={item.href}
+              onClick={onClose}
+              className={linkClass(isActive)}
             >
               <Icon name={item.icon} />
               {item.label}
-            </NavLink>
+            </Link>
           );
         })}
+
+        {/* Admin Section */}
+        {isAdmin && (
+          <>
+            <div className="mt-6 mb-2 px-3 text-xs font-semibold text-text-3 uppercase tracking-wider">
+              Admin
+            </div>
+            <Link
+              to="/dashboard/admin/users"
+              onClick={onClose}
+              className={linkClass(active === "admin-users")}
+            >
+              <Icon name="users" />
+              Users
+            </Link>
+            <Link
+              to="/dashboard/admin/moderation"
+              onClick={onClose}
+              className={linkClass(active === "admin-moderation")}
+            >
+              <Icon name="shield" />
+              Moderation
+            </Link>
+          </>
+        )}
 
         <div className="my-4 border-t border-border-1" />
 
         {settings ? (
-          <NavLink
-            {...getLinkProps(settings)}
-            className={[
-              "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
-              settings.id === active
-                ? "bg-accent-1/10 text-accent-1"
-                : "text-text-2 hover:bg-surface-2 hover:text-text-1",
-            ].join(" ")}
+          <Link
+            to={settings.href}
+            onClick={onClose}
+            className={linkClass(settings.id === active)}
           >
             <Icon name={settings.icon} />
             {settings.label}
-          </NavLink>
+          </Link>
         ) : null}
 
-        <NavLink
-          {...getLinkProps({ href: "/" })}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-text-2 hover:bg-surface-2 hover:text-text-1 mt-auto"
+        <button
+          onClick={() => {
+            onClose && onClose();
+            logout();
+          }}
+          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-text-2 hover:bg-surface-2 hover:text-text-1 mt-auto w-full text-left"
         >
-          <Icon name="home" />
-          Back to Home
-        </NavLink>
+          <span className="material-symbols-outlined size-5">logout</span>
+          Log Out
+        </button>
       </nav>
 
       {/* Upgrade */}
@@ -160,4 +193,3 @@ export default function Sidebar({ active, onClose }) {
     </aside>
   );
 }
-

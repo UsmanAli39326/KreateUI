@@ -18,7 +18,8 @@ const Drawer = ({
     position = 'right',
     title,
     children,
-    className = ''
+    className = '',
+    noPadding = false
 }) => {
     const drawerId = useId();
     const titleId = `drawer-title-${drawerId}`;
@@ -67,7 +68,7 @@ const Drawer = ({
                         </button>
                     </div>
                 )}
-                <div className="p-6 overflow-y-auto flex-1">
+                <div className={`${noPadding ? '' : 'p-6'} overflow-y-auto flex-1`}>
                     {children}
                 </div>
             </div>
