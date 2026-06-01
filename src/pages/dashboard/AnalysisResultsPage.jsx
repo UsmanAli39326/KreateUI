@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import DashboardShell from "@/components/Dashboard/DashboardShell";
 import Breadcrumbs from "@/components/Dashboard/BreadCrumbs";
 import Badge from "@/components/Common/Badge";
 import Button from "@/components/Common/Button";
 import mockIssue from "@/assets/api/issueDetails.json";
+import auditService from "../../services/auditService";
 
 function VisualComparison({ visual }) {
     return (
@@ -65,9 +66,11 @@ function CodeBlock({ code }) {
                 </h3>
                 <div className="flex items-center gap-4">
                     <span className="text-text-3 text-xs font-mono">{code.file}</span>
-                    <Button variant="tertiary" size="sm" className="!p-0 h-auto text-xs text-accent-1 hover:text-accent-hover font-bold">
-                        Apply Auto-Fix
-                    </Button>
+                    {code.onApplyFix && (
+                        <Button variant="tertiary" size="sm" className="!p-0 h-auto text-xs text-accent-1 hover:text-accent-hover font-bold" onClick={code.onApplyFix}>
+                            Apply Auto-Fix
+                        </Button>
+                    )}
                 </div>
             </div>
             <div className="p-4 text-sm leading-relaxed overflow-x-auto bg-[#0d0d10] font-mono">
@@ -93,10 +96,34 @@ function CodeBlock({ code }) {
 export default function AnalysisResultsPage() {
     const [searchParams] = useSearchParams();
     const url = searchParams.get("url") || mockIssue.url;
+    const auditId = searchParams.get("auditId");
     const [showToast, setShowToast] = useState(false);
+    
+    const [issue, setIssue] = useState({ ...mockIssue, url: url });
+    const [isLoading, setIsLoading] = useState(!!auditId);
 
-    // In a real app, we would fetch the issue details using the ID or URL
-    const issue = { ...mockIssue, url: url };
+    useEffect(() => {
+        if (auditId) {
+            auditService.getRecommendations(auditId)
+                .then(res => {
+                    // Assuming res.data contains an array of suggestions, we map the first one for the UI
+                    if (res.data && res.data.length > 0) {
+                        const rec = res.data[0];
+                        // In a real app we'd map API fields to UI fields.
+                        // For now we just merge what we can over the mock issue.
+                        setIssue(prev => ({
+                            ...prev,
+                            title: rec.title || prev.title,
+                            description: rec.description || prev.description,
+                            recommendation: rec.suggestion || prev.recommendation,
+                            id: rec.ruleId || prev.id
+                        }));
+                    }
+                })
+                .catch(err => console.error("Failed to fetch recommendations", err))
+                .finally(() => setIsLoading(false));
+        }
+    }, [auditId]);
 
     const breadcrumbs = [
         { label: "Workspace", href: "/dashboard" },
@@ -109,6 +136,30 @@ export default function AnalysisResultsPage() {
         navigator.clipboard.writeText(issue.code.preview.map(l => l.content).join('\n'));
         setShowToast(true);
         setTimeout(() => setShowToast(false), 3000);
+    };
+
+    const handleApplyFix = async () => {
+        if (!auditId) {
+            alert("This is a mock issue, cannot apply fix.");
+            return;
+        }
+        try {
+            await auditService.acceptSuggestion(auditId, issue.id);
+            alert("Suggestion applied successfully!");
+        } catch (err) {
+            console.error(err);
+            alert("Failed to apply fix");
+        }
+    };
+
+    const handleRejectFix = async () => {
+        if (!auditId) return;
+        try {
+            await auditService.rejectSuggestion(auditId, issue.id);
+            alert("Suggestion rejected.");
+        } catch (err) {
+            console.error(err);
+        }
     };
 
     return (
@@ -155,7 +206,7 @@ export default function AnalysisResultsPage() {
                 {/* Left Column: Visual & Code */}
                 <div className="lg:col-span-8 flex flex-col gap-6">
                     <VisualComparison visual={issue.visual} />
-                    <CodeBlock code={issue.code} />
+                    <CodeBlock code={{ ...issue.code, onApplyFix: handleApplyFix }} />
                 </div>
 
                 {/* Right Column: Details & Docs */}

@@ -1,7 +1,9 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import DashboardShell from "@/components/Dashboard/DashboardShell";
 import Button from "@/components/Common/Button";
 import reportData from "@/assets/api/reportData.json";
+import userService from "../../services/userService";
+import auditService from "../../services/auditService";
 
 function StatCard({ title, value, subValue, subLabel, subColor, progressColor, progressValue }) {
     return (
@@ -41,7 +43,53 @@ function StatusBadge({ status }) {
 }
 
 export default function ReportsPage() {
-    const { stats, audit } = reportData;
+    const [stats] = useState(reportData.stats);
+    const [audit, setAudit] = useState(reportData.audit);
+    const [loading, setLoading] = useState(true);
+
+    const loadAudits = async () => {
+        try {
+            setLoading(true);
+            const res = await userService.getAudits(1, 10);
+            if (res.data && res.data.length > 0) {
+                // Map API format to UI format, assuming similar structure or fallback to mock
+                // In a real app we would map res.data directly to setAudit(res.data)
+                // setAudit(res.data);
+            }
+        } catch (err) {
+            console.error("Failed to load audits", err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        loadAudits();
+    }, []);
+
+    const handleExportPdf = async (id = 1) => {
+        try {
+            const blob = await auditService.getPdfReport(id);
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `audit-report-${id}.pdf`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        } catch (err) {
+            console.error("Failed to download PDF", err);
+        }
+    };
+
+    const handleDeleteAudit = async (id) => {
+        try {
+            await auditService.deleteAudit(id);
+            alert("Audit deleted");
+            loadAudits(); // reload after delete
+        } catch (err) {
+            console.error("Failed to delete audit", err);
+        }
+    };
 
     return (
         <DashboardShell active="reports">
@@ -53,10 +101,10 @@ export default function ReportsPage() {
                         <p className="text-text-2 text-lg">Comprehensive audit for accessibility & usability optimization</p>
                     </div>
                     <div className="flex gap-3">
-                        <Button variant="secondary" icon={<span className="material-symbols-outlined text-lg">download</span>}>
+                        <Button variant="secondary" icon={<span className="material-symbols-outlined text-lg">download</span>} onClick={() => handleExportPdf(1)}>
                             Export PDF
                         </Button>
-                        <Button variant="primary" icon={<span className="material-symbols-outlined text-lg">refresh</span>} className="shadow-lg shadow-accent-1/20">
+                        <Button variant="primary" icon={<span className="material-symbols-outlined text-lg">refresh</span>} className="shadow-lg shadow-accent-1/20" onClick={loadAudits}>
                             Re-run Audit
                         </Button>
                     </div>

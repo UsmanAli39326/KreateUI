@@ -1,10 +1,48 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import DashboardShell from "@/components/Dashboard/DashboardShell";
 import Button from "@/components/Common/Button";
 import Input from "@/components/Common/Input";
+import userService from "../../services/userService";
+import { clearTokens } from "../../services/apiService";
 
 export default function SettingsPage() {
     const [activeTab, setActiveTab] = useState("profile");
+    const [profile, setProfile] = useState({ name: "", email: "" });
+    const [isSaving, setIsSaving] = useState(false);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        userService.getProfile()
+            .then(res => {
+                if (res.data) setProfile({ name: res.data.name || "", email: res.data.email || "" });
+            })
+            .catch(err => console.error("Failed to load profile", err));
+    }, []);
+
+    const handleSaveProfile = async () => {
+        setIsSaving(true);
+        try {
+            await userService.updateProfile({ name: profile.name });
+            alert("Profile updated successfully!");
+        } catch (err) {
+            alert("Failed to update profile");
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const handleDeleteAccount = async () => {
+        const pwd = prompt("Please enter your password to confirm account deletion:");
+        if (!pwd) return;
+        try {
+            await userService.deleteAccount(pwd);
+            clearTokens();
+            navigate("/auth");
+        } catch (err) {
+            alert(err?.error || "Failed to delete account");
+        }
+    };
 
     const scrollToSection = (id) => {
         setActiveTab(id);
@@ -80,14 +118,16 @@ export default function SettingsPage() {
                                 </div>
 
                                 <div className="flex flex-col gap-2">
-                                    <Input id="full-name" label="Full Name" value="Alex Rivers" readOnly />
+                                    <Input id="full-name" label="Full Name" value={profile.name} onChange={(e) => setProfile({ ...profile, name: e.target.value })} />
                                 </div>
                                 <div className="flex flex-col gap-2">
-                                    <Input id="email" label="Email Address" type="email" value="alex@ui-ai.dev" readOnly />
+                                    <Input id="email" label="Email Address" type="email" value={profile.email} readOnly />
                                 </div>
                             </div>
                             <div className="flex justify-end">
-                                <Button variant="primary">Save Changes</Button>
+                                <Button variant="primary" onClick={handleSaveProfile} disabled={isSaving}>
+                                    {isSaving ? "Saving..." : "Save Changes"}
+                                </Button>
                             </div>
                         </section>
 
@@ -188,7 +228,7 @@ export default function SettingsPage() {
                                     <p className="text-sm font-bold text-text-1">Delete Account</p>
                                     <p className="text-xs text-text-3 mt-1">Permanently remove your account and all projects. This cannot be undone.</p>
                                 </div>
-                                <Button variant="tertiary" className="text-danger border border-danger/50 hover:bg-danger/10">Delete Account</Button>
+                                <Button variant="tertiary" className="text-danger border border-danger/50 hover:bg-danger/10" onClick={handleDeleteAccount}>Delete Account</Button>
                             </div>
                         </section>
 

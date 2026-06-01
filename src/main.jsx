@@ -14,6 +14,7 @@ import FixIssuePage from "./pages/dashboard/FixIssuePage.jsx";
 import ReportsPage from "./pages/dashboard/ReportsPage.jsx";
 import SettingsPage from "./pages/dashboard/SettingsPage.jsx";
 import ProjectsPage from "./pages/dashboard/ProjectsPage.jsx";
+import AdminPage from "./pages/dashboard/AdminPage.jsx";
 import AboutContent from "./pages/About.jsx";
 import ContactPageContent from "./pages/ContactPage.jsx";
 import MarketplacePage from "./pages/MarketplacePage.jsx";
@@ -48,6 +49,7 @@ const router = createBrowserRouter([
       { path: "reports", element: <ReportsPage /> },
       { path: "settings", element: <SettingsPage /> },
       { path: "projects", element: <ProjectsPage /> }, // Add ProjectsPage route
+      { path: "admin", element: <AdminPage /> },
     ],
   },
 

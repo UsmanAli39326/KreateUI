@@ -1,26 +1,75 @@
+import React, { useRef, useState } from "react";
+import { motion } from "framer-motion";
+
 export default function FinalCTA() {
+  const btnRef = useRef(null);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+
+  const handleMouseMove = (e) => {
+    if (!btnRef.current) return;
+    const { clientX, clientY } = e;
+    const { left, top, width, height } = btnRef.current.getBoundingClientRect();
+    const x = (clientX - (left + width / 2)) * 0.2;
+    const y = (clientY - (top + height / 2)) * 0.2;
+    setPosition({ x, y });
+  };
+
+  const handleMouseLeave = () => {
+    setPosition({ x: 0, y: 0 });
+  };
+
   return (
-    <section className="py-16 sm:py-20 lg:py-24 text-center bg-bg-1">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-text-1 mb-6 sm:mb-8 tracking-tight font-[var(--font-display)]">
-          Ready to build for everyone?
-        </h2>
+    <section className="py-24 sm:py-32 text-center bg-white relative overflow-hidden">
+      {/* Decorative gradients */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-[400px] bg-[radial-gradient(ellipse_at_top,_#E8743B30_0%,_transparent_70%)] pointer-events-none"></div>
 
-        <p className="text-base sm:text-lg md:text-xl text-text-2 mb-8 sm:mb-12 max-w-2xl mx-auto leading-relaxed">
-          Join 2,400+ technical teams and start delivering fully accessible interfaces without the manual overhead.
-        </p>
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <motion.h2
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-navy mb-6 sm:mb-8 tracking-tight font-[var(--font-display)]"
+        >
+          Ready to build the future?
+        </motion.h2>
 
-        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
-          <button className="bg-primary text-white text-base sm:text-lg font-bold px-8 sm:px-10 py-4 sm:py-5 rounded-xl hover:bg-accent-hover hover:scale-[1.02] transition-all shadow-lg shadow-primary/20 cursor-pointer">
-            Get Started Free
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.1 }}
+          className="text-lg sm:text-xl md:text-2xl text-navy/70 mb-12 max-w-2xl mx-auto leading-relaxed"
+        >
+          Join elite teams generating production-ready, fully accessible websites at lightning speed.
+        </motion.p>
+
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.2 }}
+          className="flex flex-col sm:flex-row gap-6 justify-center items-center"
+        >
+          <motion.button
+            ref={btnRef}
+            onMouseMove={handleMouseMove}
+            onMouseLeave={handleMouseLeave}
+            animate={{ x: position.x, y: position.y }}
+            transition={{ type: "spring", stiffness: 150, damping: 15, mass: 0.1 }}
+            className="relative bg-primary text-white text-lg font-bold px-10 py-5 rounded-2xl transition-colors hover:bg-accent-hover shadow-[0_0_40px_rgba(232,116,59,0.4)] cursor-pointer group"
+          >
+            <span className="relative z-10 flex items-center gap-2">
+              Start Generating
+              <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+            </span>
+          </motion.button>
+
+          <button className="bg-transparent text-navy border border-navy/20 text-lg font-bold px-10 py-5 rounded-2xl hover:bg-navy/5 transition-all cursor-pointer">
+            View Documentation
           </button>
+        </motion.div>
 
-          <button className="bg-navy text-white text-base sm:text-lg font-bold px-8 sm:px-10 py-4 sm:py-5 rounded-xl hover:bg-navy-hover transition-all cursor-pointer">
-            Book a Technical Demo
-          </button>
-        </div>
-
-        <p className="mt-6 sm:mt-8 text-text-3 text-sm font-medium">
+        <p className="mt-10 text-navy/50 text-sm font-medium tracking-wide uppercase">
           No credit card required. Free 14-day trial.
         </p>
       </div>

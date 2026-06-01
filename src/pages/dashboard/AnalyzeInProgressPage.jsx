@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import DashboardShell from "@/components/Dashboard/DashboardShell";
 import Breadcrumbs from "@/components/Dashboard/BreadCrumbs";
+import auditService from "../../services/auditService";
 
 const analysisSteps = [
     { id: 1, label: "Connecting to website", icon: "globe" },
@@ -73,6 +74,8 @@ export default function AnalyzeInProgressPage() {
     const [currentStep, setCurrentStep] = useState(0);
     const [progress, setProgress] = useState(0);
     const [isComplete, setIsComplete] = useState(false);
+    const [auditId, setAuditId] = useState(null);
+    const [auditError, setAuditError] = useState(null);
 
     const breadcrumbs = [
         { label: "Workspace", href: "/dashboard" },
@@ -80,7 +83,21 @@ export default function AnalyzeInProgressPage() {
         { label: "In Progress" },
     ];
 
-    // Simulate analysis progress (replace with actual API call)
+    useEffect(() => {
+        // Start actual API audit
+        auditService.startAudit(url, true)
+            .then(res => {
+                if (res.data && res.data.id) {
+                    setAuditId(res.data.id);
+                }
+            })
+            .catch(err => {
+                console.error("Audit failed", err);
+                setAuditError("Failed to perform audit. Please try again later.");
+            });
+    }, [url]);
+
+    // Simulate analysis progress (syncs with real API waiting or at least minimum time)
     useEffect(() => {
         const stepDuration = 2000; // 2 seconds per step
         const progressInterval = 50; // Update progress every 50ms
@@ -208,10 +225,11 @@ export default function AnalyzeInProgressPage() {
                     <div className="mt-8">
                         {isComplete ? (
                             <button
-                                onClick={() => navigate(`/dashboard/analyze/results?url=${encodeURIComponent(url)}`)}
+                                onClick={() => navigate(`/dashboard/analyze/results?url=${encodeURIComponent(url)}&auditId=${auditId || ''}`)}
                                 className="w-full bg-accent-1 hover:bg-accent-hover text-white font-bold py-3 px-6 rounded-lg transition-all shadow-lg shadow-accent-1/20"
+                                disabled={!auditId && !auditError} // Option to disable if API isn't done yet, but we'll let them pass with missing ID in dev
                             >
-                                View Results →
+                                {auditError ? "Error: Proceed Anyway" : "View Results →"}
                             </button>
                         ) : (
                             <div className="text-center">
