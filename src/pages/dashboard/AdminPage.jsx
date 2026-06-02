@@ -2,8 +2,10 @@ import React, { useState, useEffect } from "react";
 import DashboardShell from "@/components/Dashboard/DashboardShell";
 import Button from "@/components/Common/Button";
 import adminService from "../../services/adminService";
+import { useToast } from "@/components/Common";
 
 export default function AdminPage() {
+    const toast = useToast();
     const [analytics, setAnalytics] = useState(null);
     const [logs, setLogs] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -34,22 +36,22 @@ export default function AdminPage() {
         if (!confirm("Are you sure you want to delete this user?")) return;
         try {
             await adminService.deleteUser(userId);
-            alert("User deleted successfully.");
+            toast.success("User deleted successfully.");
             // Ideally we'd reload the user list if we had one
         } catch (err) {
             console.error("Failed to delete user", err);
-            alert("Failed to delete user.");
+            toast.error("Failed to delete user.");
         }
     };
 
     const handleToggleBlock = async (userId) => {
         try {
             await adminService.toggleUserBlock(userId);
-            alert("User block status toggled.");
+            toast.success("User block status toggled.");
             // Ideally we'd reload the user list if we had one
         } catch (err) {
             console.error("Failed to toggle block", err);
-            alert("Failed to toggle user block status.");
+            toast.error("Failed to toggle user block status.");
         }
     };
 

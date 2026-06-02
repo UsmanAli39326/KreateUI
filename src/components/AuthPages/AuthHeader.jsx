@@ -6,25 +6,7 @@ export default function AuthHeader({ onSignUpClick }) {
     <header className="w-full border-b border-gray-200 dark:border-border-dark px-6 py-4">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="text-primary shrink-0">
-            <svg
-              className="size-6"
-              fill="currentColor"
-              viewBox="0 0 48 48"
-              xmlns="http://www.w3.org/2000/svg"
-              aria-hidden="true"
-            >
-              <path
-                fillRule="evenodd"
-                clipRule="evenodd"
-                d="M24 4H6V17.3333V30.6667H24V44H42V30.6667V17.3333H24V4Z"
-              />
-            </svg>
-          </div>
-
-          <h2 className="text-gray-100 dark:text-text-main text-lg font-bold leading-tight tracking-tight truncate">
-            UI Enhancement Platform
-          </h2>
+          <img src="/logo.png" alt="Kreate UI Logo" className="h-10 w-auto object-contain" />
         </div>
 
         <div className="hidden md:flex items-center gap-8">

@@ -36,10 +36,10 @@ export default function AnalyzeDashboard() {
 
     setIsAnalyzing(true);
 
-    const normalized = url.replace(/^https?:\/\//, "");
+    const formattedUrl = url.startsWith("http://") || url.startsWith("https://") ? url : `https://${url}`;
 
     // Navigate to the in-progress page with URL as query param
-    navigate(`/dashboard/analyze/progress?url=${encodeURIComponent(normalized)}`);
+    navigate(`/dashboard/analyze/progress?url=${encodeURIComponent(formattedUrl)}`);
   };
 
   return (

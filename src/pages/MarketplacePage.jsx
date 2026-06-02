@@ -62,8 +62,10 @@ export default function MarketplacePage() {
             try {
                 setLoading(true);
                 const res = await marketplaceService.getTemplates(searchQuery);
-                if (res.data && res.data.length > 0) {
-                    setItems(res.data);
+                // API may return flat array or { items: [...] }
+                const templatesList = Array.isArray(res) ? res : (res?.items || res?.data);
+                if (templatesList && templatesList.length > 0) {
+                    setItems(templatesList);
                 } else if (searchQuery === "") {
                     // fallback to mock if empty
                     setItems(marketplaceData.items);

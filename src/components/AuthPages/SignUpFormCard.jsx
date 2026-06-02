@@ -128,9 +128,6 @@ export default function SignUpFormCard({ onSubmit, onContinueGoogle, onContinueG
             fullWidth
             isDisabled={!agree}
             iconRight={<span className="material-symbols-outlined text-[20px]">arrow_forward</span>}
-            onClick={()=>{
-                Navigate("/dashboard")
-            }}
           >
             Create Account
           </Button>

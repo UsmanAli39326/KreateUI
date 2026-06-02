@@ -2,6 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import nav from "@/assets/api/dashboardNavbar.json";
 import UpgradeCard from "@/components/Dashboard/UpgradeCard";
+import { useAuth } from "../../context/AuthContext";
 
 function Icon({ name }) {
   const cls = "size-5";
@@ -61,6 +62,7 @@ function Icon({ name }) {
 export default function Sidebar({ active, onClose }) {
   const topItems = nav.filter((n) => n.id !== "settings");
   const settings = nav.find((n) => n.id === "settings");
+  const { logout } = useAuth();
 
   const NavLink = onClose ? 'a' : Link;
   const getLinkProps = (item) => {
@@ -72,38 +74,23 @@ export default function Sidebar({ active, onClose }) {
 
   return (
     <aside className="w-64 border-r border-border-1 flex flex-col h-screen bg-bg-1">
-      {/* Mobile header (only in drawer mode) */}
-      {onClose ? (
-        <div className="lg:hidden p-4 flex items-center justify-between border-b border-border-1">
-          <div className="flex items-center gap-2">
-            <div className="size-8 bg-accent-1 rounded-lg flex items-center justify-center text-white">
-              <span className="text-sm font-bold">AI</span>
-            </div>
-            <div className="font-bold text-text-1">AI ENHANCE</div>
-          </div>
-
+      {/* Brand & Mobile header */}
+      <div className="p-4 lg:p-6 flex items-center justify-between gap-3 border-b lg:border-none border-border-1">
+        <Link to="/" className="flex items-center min-w-0">
+          <img src="/logo.png" alt="Kreate UI Logo" className="h-12 w-auto object-contain" />
+        </Link>
+        {onClose && (
           <button
             type="button"
-            className="p-2 rounded-lg hover:bg-surface-2 text-text-2"
+            className="lg:hidden p-2 rounded-lg hover:bg-surface-2 text-text-2"
             onClick={onClose}
             aria-label="Close menu"
           >
-            ✕
+            <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M18 6L6 18M6 6l12 12" />
+            </svg>
           </button>
-        </div>
-      ) : null}
-
-      {/* Brand (desktop + also visible inside drawer below mobile header) */}
-      <div className="p-6 flex items-center gap-3">
-        <div className="size-8 bg-accent-1 rounded-lg flex items-center justify-center text-white">
-          <span className="text-sm font-bold">AI</span>
-        </div>
-        <div className="flex flex-col">
-          <h1 className="text-sm font-bold tracking-tight text-text-1">AI ENHANCE</h1>
-          <p className="text-[10px] text-text-3 font-medium uppercase tracking-widest">
-            Pro Workspace
-          </p>
-        </div>
+        )}
       </div>
 
       {/* Nav */}
@@ -151,6 +138,18 @@ export default function Sidebar({ active, onClose }) {
           <Icon name="home" />
           Back to Home
         </NavLink>
+
+        <button
+          onClick={logout}
+          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-text-2 hover:bg-surface-2 hover:text-text-1 mt-1 text-left"
+        >
+          <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <polyline points="16 17 21 12 16 7" />
+            <line x1="21" y1="12" x2="9" y2="12" />
+          </svg>
+          Log out
+        </button>
       </nav>
 
       {/* Upgrade */}

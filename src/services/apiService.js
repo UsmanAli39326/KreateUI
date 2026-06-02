@@ -1,4 +1,4 @@
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+const BASE_URL = import.meta.env.VITE_BASE_URL || 'https://webuifixer.onrender.com/api';
 
 // Helper to get tokens
 export const getToken = () => localStorage.getItem('token');
@@ -29,7 +29,7 @@ const onRefreshed = (token) => {
 };
 
 async function customFetch(endpoint, options = {}) {
-  const url = `${BASE_URL}${endpoint}`;
+  const url = endpoint.startsWith('http') ? endpoint : `${BASE_URL}${endpoint}`;
   const headers = {
     'Content-Type': 'application/json',
     ...options.headers,
@@ -55,12 +55,12 @@ async function customFetch(endpoint, options = {}) {
 
     let data;
     const contentType = response.headers.get('content-type');
-    
+
     // Handle binary responses (e.g. PDF/ZIP)
     if (contentType && (
-        contentType.includes('application/pdf') || 
-        contentType.includes('application/zip') ||
-        contentType.includes('application/octet-stream')
+      contentType.includes('application/pdf') ||
+      contentType.includes('application/zip') ||
+      contentType.includes('application/octet-stream')
     )) {
       return response.blob();
     }
@@ -105,7 +105,7 @@ async function customFetch(endpoint, options = {}) {
           isRefreshing = false;
           clearTokens();
           window.location.href = '/login';
-          return Promise.reject('Session expired');
+          return Promise.reject({ error: 'Session expired. Please log in again.' });
         }
       }
 
@@ -119,23 +119,43 @@ async function customFetch(endpoint, options = {}) {
     }
 
     // Global error handling based on status codes
+    let errorMessage = 'An unexpected error occurred';
+    if (data && data.error) {
+      errorMessage = data.error;
+    } else if (data && data.message) {
+      errorMessage = data.message;
+    }
+
     if (response.status === 400) {
-      console.error('Validation Error:', data.errors || data.error);
+      console.error('Validation Error:', data?.errors || data?.error);
+    } else if (response.status === 401) {
+      errorMessage = 'Session expired. Please log in again.';
     } else if (response.status === 403) {
       console.error('Access Denied');
+      errorMessage = 'Access Denied: You do not have permission to perform this action.';
     } else if (response.status === 404) {
       console.error('Resource Not Found');
+      errorMessage = 'Resource Not Found: The requested endpoint does not exist.';
     } else if (response.status === 429) {
       const resetTime = response.headers.get('X-RateLimit-Reset');
       console.error('Rate Limit Exceeded. Reset at:', resetTime);
+      errorMessage = 'Rate limit exceeded. Please try again later.';
     } else if (response.status >= 500) {
       console.error('Service Unavailable');
+      errorMessage = 'Service Unavailable: Our servers are currently experiencing issues. Please try again later.';
     }
 
-    return Promise.reject(data);
+    if (typeof data === 'object' && data !== null) {
+      return Promise.reject({ ...data, error: data.error || errorMessage });
+    }
+
+    return Promise.reject({ error: errorMessage, originalData: data });
   } catch (error) {
     // Network errors
-    return Promise.reject(error);
+    console.error('Fetch Error:', error);
+    return Promise.reject({
+      error: 'Network Error: Unable to connect to the server. Please check your connection and try again.'
+    });
   }
 }
 

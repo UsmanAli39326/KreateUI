@@ -2,27 +2,35 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import authService from "../../services/authService";
-import { setTokens } from "../../services/apiService";
+import { useAuth } from "../../context/AuthContext";
+import { useToast } from "../../components/Common";
 
 import AuthHeader from "../../components/AuthPages/AuthHeader";
 import AuthCard from "../../components/AuthPages/AuthCard";
-import AuthFooter from "../../components/AuthPages/AuthFooter";
+import Footer from "../../components/Footer";
 
 export default function Login() {
   const navigate = useNavigate();
+  const { login } = useAuth();
+  const toast = useToast();
   const [error, setError] = useState(null);
 
   const handleSignIn = async ({ email, password }) => {
     try {
       setError(null);
       const res = await authService.login({ email, password });
-      if (res.data?.token) {
-        setTokens(res.data.token, res.data.refreshToken);
+      if (res.data?.token || res.token) {
+        const token = res.data?.token || res.token;
+        const refreshToken = res.data?.refreshToken || res.refreshToken;
+        await login(token, refreshToken);
+        toast.success("Welcome back! Loading your workspace...", "Signed In");
         navigate("/dashboard");
       }
     } catch (err) {
       console.error("Login failed:", err);
-      setError(err?.error || err?.errors?.[0]?.msg || "Invalid credentials");
+      const errMsg = err?.error || err?.errors?.[0]?.msg || "Invalid credentials";
+      setError(errMsg);
+      toast.error(errMsg, "Sign In Failed");
     }
   };
 
@@ -47,7 +55,7 @@ export default function Login() {
         />
       </main>
 
-      <AuthFooter />
+      <Footer />
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import DashboardShell from "@/components/Dashboard/DashboardShell";
 import Breadcrumbs from "@/components/Dashboard/BreadCrumbs";
 import auditService from "../../services/auditService";
+import { useToast, ErrorState } from "../../components/Common";
 
 const analysisSteps = [
     { id: 1, label: "Connecting to website", icon: "globe" },
@@ -70,6 +71,7 @@ export default function AnalyzeInProgressPage() {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const url = searchParams.get("url") || "example.com";
+    const toast = useToast();
 
     const [currentStep, setCurrentStep] = useState(0);
     const [progress, setProgress] = useState(0);
@@ -83,22 +85,40 @@ export default function AnalyzeInProgressPage() {
         { label: "In Progress" },
     ];
 
-    useEffect(() => {
-        // Start actual API audit
-        auditService.startAudit(url, true)
+    const runAudit = (targetUrl) => {
+        auditService.startAudit(targetUrl, true)
             .then(res => {
-                if (res.data && res.data.id) {
-                    setAuditId(res.data.id);
+                // API returns flat: { id, url, summary, issues, ... }
+                const auditIdValue = res?.id || res?.data?.id;
+                if (auditIdValue) {
+                    setAuditId(auditIdValue);
                 }
             })
             .catch(err => {
                 console.error("Audit failed", err);
-                setAuditError("Failed to perform audit. Please try again later.");
+                const errMsg = err?.error || "Failed to perform audit. Please try again later.";
+                setAuditError(errMsg);
+                toast.error(errMsg, "Audit Execution Failed");
             });
+    };
+
+    useEffect(() => {
+        runAudit(url);
     }, [url]);
+
+    const handleRetry = () => {
+        setAuditError(null);
+        setCurrentStep(0);
+        setProgress(0);
+        setIsComplete(false);
+        setAuditId(null);
+        runAudit(url);
+    };
 
     // Simulate analysis progress (syncs with real API waiting or at least minimum time)
     useEffect(() => {
+        if (auditError) return;
+
         const stepDuration = 2000; // 2 seconds per step
         const progressInterval = 50; // Update progress every 50ms
         const progressIncrement = 100 / (stepDuration / progressInterval);
@@ -127,7 +147,7 @@ export default function AnalyzeInProgressPage() {
         }, progressInterval);
 
         return () => clearInterval(timer);
-    }, [currentStep]);
+    }, [currentStep, auditError]);
 
     return (
         <DashboardShell active="analyze">
@@ -136,112 +156,133 @@ export default function AnalyzeInProgressPage() {
             <div className="flex flex-col items-center justify-center min-h-[60vh] py-12">
                 {/* Main Card */}
                 <div className="w-full max-w-lg bg-surface-1 border border-border-1 rounded-2xl p-8 shadow-xl">
-                    {/* Header */}
-                    <div className="text-center mb-8">
-                        <div className="inline-flex items-center justify-center size-16 bg-accent-1/10 rounded-full mb-4">
-                            {isComplete ? (
-                                <svg className="size-8 text-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                                    <polyline points="22 4 12 14.01 9 11.01" />
-                                </svg>
-                            ) : (
-                                <div className="size-8 border-3 border-accent-1 border-t-transparent rounded-full animate-spin" />
-                            )}
-                        </div>
-                        <h1 className="text-2xl font-bold text-text-1 mb-2">
-                            {isComplete ? "Analysis Complete!" : "Analyzing Website"}
-                        </h1>
-                        <p className="text-text-3 text-sm">
-                            {isComplete ? "Your results are ready" : `Scanning ${url}`}
-                        </p>
-                    </div>
-
-                    {/* Progress Bar */}
-                    <div className="mb-8">
-                        <div className="flex justify-between text-xs text-text-3 mb-2">
-                            <span>Progress</span>
-                            <span>{Math.round(progress)}%</span>
-                        </div>
-                        <div className="h-2 bg-bg-0 rounded-full overflow-hidden">
-                            <div
-                                className="h-full bg-gradient-to-r from-accent-1 to-accent-hover rounded-full transition-all duration-300 ease-out"
-                                style={{ width: `${progress}%` }}
+                    {auditError ? (
+                        <div className="space-y-6">
+                            <ErrorState
+                                title="Analysis Failed"
+                                message={auditError}
+                                onRetry={handleRetry}
+                                className="!bg-transparent !border-none !p-0"
                             />
-                        </div>
-                    </div>
-
-                    {/* Steps List */}
-                    <div className="space-y-3">
-                        {analysisSteps.map((step, idx) => {
-                            const isActive = idx === currentStep && !isComplete;
-                            const isStepComplete = idx < currentStep || isComplete;
-
-                            return (
-                                <div
-                                    key={step.id}
-                                    className={`flex items-center gap-3 p-3 rounded-lg transition-all duration-300 ${isActive
-                                        ? "bg-accent-1/10 border border-accent-1/20"
-                                        : isStepComplete
-                                            ? "bg-success/5 border border-success/10"
-                                            : "bg-bg-0/50 border border-transparent"
-                                        }`}
-                                >
-                                    {/* Step indicator */}
-                                    <div className={`flex items-center justify-center size-8 rounded-full ${isStepComplete
-                                        ? "bg-success/20"
-                                        : isActive
-                                            ? "bg-accent-1/20"
-                                            : "bg-surface-2"
-                                        }`}>
-                                        {isStepComplete ? (
-                                            <CheckIcon />
-                                        ) : (
-                                            <StepIcon name={step.icon} isActive={isActive} isComplete={isStepComplete} />
-                                        )}
-                                    </div>
-
-                                    {/* Step label */}
-                                    <span className={`text-sm font-medium ${isStepComplete
-                                        ? "text-success"
-                                        : isActive
-                                            ? "text-accent-1"
-                                            : "text-text-3"
-                                        }`}>
-                                        {step.label}
-                                    </span>
-
-                                    {/* Loading indicator for active step */}
-                                    {isActive && (
-                                        <div className="ml-auto">
-                                            <div className="size-4 border-2 border-accent-1 border-t-transparent rounded-full animate-spin" />
-                                        </div>
-                                    )}
-                                </div>
-                            );
-                        })}
-                    </div>
-
-                    {/* Action Buttons */}
-                    <div className="mt-8">
-                        {isComplete ? (
-                            <button
-                                onClick={() => navigate(`/dashboard/analyze/results?url=${encodeURIComponent(url)}&auditId=${auditId || ''}`)}
-                                className="w-full bg-accent-1 hover:bg-accent-hover text-white font-bold py-3 px-6 rounded-lg transition-all shadow-lg shadow-accent-1/20"
-                                disabled={!auditId && !auditError} // Option to disable if API isn't done yet, but we'll let them pass with missing ID in dev
-                            >
-                                {auditError ? "Error: Proceed Anyway" : "View Results →"}
-                            </button>
-                        ) : (
-                            <div className="text-center">
+                            <div className="text-center pt-2">
                                 <button
                                     onClick={() => navigate("/dashboard/analyze")}
                                     className="text-sm text-text-3 hover:text-text-1 transition-colors"
                                 >
-                                    Cancel Analysis
+                                    Return to Analyze Page
                                 </button>
                             </div>
-                        )}
-                    </div>
+                        </div>
+                    ) : (
+                        <>
+                            {/* Header */}
+                            <div className="text-center mb-8">
+                                <div className="inline-flex items-center justify-center size-16 bg-accent-1/10 rounded-full mb-4">
+                                    {isComplete ? (
+                                        <svg className="size-8 text-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                                            <polyline points="22 4 12 14.01 9 11.01" />
+                                        </svg>
+                                    ) : (
+                                        <div className="size-8 border-3 border-accent-1 border-t-transparent rounded-full animate-spin" />
+                                    )}
+                                </div>
+                                <h1 className="text-2xl font-bold text-text-1 mb-2">
+                                    {isComplete ? "Analysis Complete!" : "Analyzing Website"}
+                                </h1>
+                                <p className="text-text-3 text-sm">
+                                    {isComplete ? "Your results are ready" : `Scanning ${url}`}
+                                </p>
+                            </div>
+
+                            {/* Progress Bar */}
+                            <div className="mb-8">
+                                <div className="flex justify-between text-xs text-text-3 mb-2">
+                                    <span>Progress</span>
+                                    <span>{Math.round(progress)}%</span>
+                                </div>
+                                <div className="h-2 bg-bg-0 rounded-full overflow-hidden">
+                                    <div
+                                        className="h-full bg-gradient-to-r from-accent-1 to-accent-hover rounded-full transition-all duration-300 ease-out"
+                                        style={{ width: `${progress}%` }}
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Steps List */}
+                            <div className="space-y-3">
+                                {analysisSteps.map((step, idx) => {
+                                    const isActive = idx === currentStep && !isComplete;
+                                    const isStepComplete = idx < currentStep || isComplete;
+
+                                    return (
+                                        <div
+                                            key={step.id}
+                                            className={`flex items-center gap-3 p-3 rounded-lg transition-all duration-300 ${isActive
+                                                ? "bg-accent-1/10 border border-accent-1/20"
+                                                : isStepComplete
+                                                    ? "bg-success/5 border border-success/10"
+                                                    : "bg-bg-0/50 border border-transparent"
+                                                }`}
+                                        >
+                                            {/* Step indicator */}
+                                            <div className={`flex items-center justify-center size-8 rounded-full ${isStepComplete
+                                                ? "bg-success/20"
+                                                : isActive
+                                                    ? "bg-accent-1/20"
+                                                    : "bg-surface-2"
+                                                }`}>
+                                                {isStepComplete ? (
+                                                    <CheckIcon />
+                                                ) : (
+                                                    <StepIcon name={step.icon} isActive={isActive} isComplete={isStepComplete} />
+                                                )}
+                                            </div>
+
+                                            {/* Step label */}
+                                            <span className={`text-sm font-medium ${isStepComplete
+                                                ? "text-success"
+                                                : isActive
+                                                    ? "text-accent-1"
+                                                    : "text-text-3"
+                                                }`}>
+                                                {step.label}
+                                            </span>
+
+                                            {/* Loading indicator for active step */}
+                                            {isActive && (
+                                                <div className="ml-auto">
+                                                    <div className="size-4 border-2 border-accent-1 border-t-transparent rounded-full animate-spin" />
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+
+                            {/* Action Buttons */}
+                            <div className="mt-8">
+                                {isComplete ? (
+                                    <button
+                                        onClick={() => navigate(`/dashboard/analyze/results?url=${encodeURIComponent(url)}&auditId=${auditId || ''}`)}
+                                        className="w-full bg-accent-1 hover:bg-accent-hover text-white font-bold py-3 px-6 rounded-lg transition-all shadow-lg shadow-accent-1/20"
+                                        disabled={!auditId} // Keep disabled ONLY if auditId is missing (prevent mock issues from bypassing)
+                                    >
+                                        View Results →
+                                    </button>
+                                ) : (
+                                    <div className="text-center">
+                                        <button
+                                            onClick={() => navigate("/dashboard/analyze")}
+                                            className="text-sm text-text-3 hover:text-text-1 transition-colors"
+                                        >
+                                            Cancel Analysis
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        </>
+                    )}
                 </div>
 
                 {/* Tips */}

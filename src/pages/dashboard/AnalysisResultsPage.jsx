@@ -4,6 +4,7 @@ import DashboardShell from "@/components/Dashboard/DashboardShell";
 import Breadcrumbs from "@/components/Dashboard/BreadCrumbs";
 import Badge from "@/components/Common/Badge";
 import Button from "@/components/Common/Button";
+import { useToast } from "@/components/Common";
 import mockIssue from "@/assets/api/issueDetails.json";
 import auditService from "../../services/auditService";
 
@@ -97,6 +98,7 @@ export default function AnalysisResultsPage() {
     const [searchParams] = useSearchParams();
     const url = searchParams.get("url") || mockIssue.url;
     const auditId = searchParams.get("auditId");
+    const toast = useToast();
     const [showToast, setShowToast] = useState(false);
     
     const [issue, setIssue] = useState({ ...mockIssue, url: url });
@@ -106,9 +108,10 @@ export default function AnalysisResultsPage() {
         if (auditId) {
             auditService.getRecommendations(auditId)
                 .then(res => {
-                    // Assuming res.data contains an array of suggestions, we map the first one for the UI
-                    if (res.data && res.data.length > 0) {
-                        const rec = res.data[0];
+                    // API returns: { auditId, recommendations: [...] }
+                    const recs = res?.recommendations || res?.data;
+                    if (recs && recs.length > 0) {
+                        const rec = recs[0];
                         // In a real app we'd map API fields to UI fields.
                         // For now we just merge what we can over the mock issue.
                         setIssue(prev => ({
@@ -120,7 +123,10 @@ export default function AnalysisResultsPage() {
                         }));
                     }
                 })
-                .catch(err => console.error("Failed to fetch recommendations", err))
+                .catch(err => {
+                    console.error("Failed to fetch recommendations", err);
+                    toast.error("Failed to load recommendations from server.", "Error");
+                })
                 .finally(() => setIsLoading(false));
         }
     }, [auditId]);
@@ -134,21 +140,22 @@ export default function AnalysisResultsPage() {
 
     const handleCopyFix = () => {
         navigator.clipboard.writeText(issue.code.preview.map(l => l.content).join('\n'));
+        toast.success("Fix snippet copied to clipboard!", "Copied");
         setShowToast(true);
         setTimeout(() => setShowToast(false), 3000);
     };
 
     const handleApplyFix = async () => {
         if (!auditId) {
-            alert("This is a mock issue, cannot apply fix.");
+            toast.warning("This is a mock issue, cannot apply auto-fix in preview mode.", "Mock Preview");
             return;
         }
         try {
             await auditService.acceptSuggestion(auditId, issue.id);
-            alert("Suggestion applied successfully!");
+            toast.success("AI suggestion applied successfully to the source code!", "Success");
         } catch (err) {
             console.error(err);
-            alert("Failed to apply fix");
+            toast.error("Failed to automatically apply the proposed fix.", "Error");
         }
     };
 
@@ -156,9 +163,10 @@ export default function AnalysisResultsPage() {
         if (!auditId) return;
         try {
             await auditService.rejectSuggestion(auditId, issue.id);
-            alert("Suggestion rejected.");
+            toast.info("Suggestion rejected.", "Info");
         } catch (err) {
             console.error(err);
+            toast.error("Failed to reject the suggestion.", "Error");
         }
     };
 

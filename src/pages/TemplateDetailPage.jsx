@@ -3,9 +3,11 @@ import { useParams, Link } from "react-router-dom";
 import Button from "@/components/Common/Button";
 import marketplaceData from "@/assets/api/marketplaceData.json";
 import marketplaceService from "../services/marketplaceService";
+import { useToast } from "@/components/Common";
 
 export default function TemplateDetailPage() {
     const { templateId } = useParams();
+    const toast = useToast();
     const { featured, items } = marketplaceData;
     const [isPurchasing, setIsPurchasing] = useState(false);
     const [isDownloading, setIsDownloading] = useState(false);
@@ -22,11 +24,11 @@ export default function TemplateDetailPage() {
         try {
             setIsPurchasing(true);
             await marketplaceService.purchaseTemplate(templateId);
-            alert("Template purchased successfully!");
+            toast.success("Template purchased successfully!");
             // After purchase, we could automatically trigger download or change UI state
         } catch (err) {
             console.error("Purchase failed", err);
-            alert("Failed to purchase template");
+            toast.error("Failed to purchase template");
         } finally {
             setIsPurchasing(false);
         }
@@ -44,7 +46,7 @@ export default function TemplateDetailPage() {
             window.URL.revokeObjectURL(url);
         } catch (err) {
             console.error("Download failed", err);
-            alert("Failed to download template. Please make sure you have purchased it.");
+            toast.error("Failed to download template. Please make sure you have purchased it.");
         } finally {
             setIsDownloading(false);
         }

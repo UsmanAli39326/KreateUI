@@ -115,10 +115,6 @@ export default function AuthCard({
                         variant="primary"
                         fullWidth
                         iconRight={<span className="material-symbols-outlined text-sm">login</span>}
-                        onClick={() => {
-                            navigate("/dashboard")
-                        }
-                        }
                     >
                         Sign In
                     </Button>

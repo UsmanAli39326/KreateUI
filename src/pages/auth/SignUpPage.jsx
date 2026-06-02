@@ -2,25 +2,35 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import authService from "../../services/authService";
-import { setTokens } from "../../services/apiService";
+import { useAuth } from "../../context/AuthContext";
+import { useToast } from "../../components/Common";
 
 import SignUpHeader from "../../components/AuthPages/SignUpHeader";
 import SignUpLeftPanel from "../../components/AuthPages/SignUpLeftPanel";
 import SignUpFormCard from "../../components/AuthPages/SignUpFormCard";
-import SignUpFooter from "../../components/AuthPages/SignUpFooter";
+import Footer from "../../components/Footer";
 
 export default function SignUpPage() {
   const navigate = useNavigate();
+  const { login } = useAuth();
+  const toast = useToast();
   const [error, setError] = useState(null);
 
   const handleSignUp = async (payload) => {
     try {
       setError(null);
-      // The payload probably has { name, email, password }
-      const res = await authService.register(payload);
-      if (res.data?.token) {
+      const apiPayload = {
+        name: payload.fullName,
+        email: payload.workEmail,
+        password: payload.password,
+      };
+      const res = await authService.register(apiPayload);
+      toast.success("Account created successfully!", "Success");
+      if (res.data?.token || res.token) {
         // Some systems return tokens immediately on register, others require login
-        setTokens(res.data.token, res.data.refreshToken);
+        const token = res.data?.token || res.token;
+        const refreshToken = res.data?.refreshToken || res.refreshToken;
+        await login(token, refreshToken);
         navigate("/dashboard");
       } else {
         // Fallback to login if no token is provided by register endpoint
@@ -28,7 +38,9 @@ export default function SignUpPage() {
       }
     } catch (err) {
       console.error("Sign up failed:", err);
-      setError(err?.error || err?.errors?.[0]?.msg || "Failed to register");
+      const errMsg = err?.error || err?.errors?.[0]?.msg || "Failed to register";
+      setError(errMsg);
+      toast.error(errMsg, "Registration Failed");
     }
   };
 
@@ -48,7 +60,7 @@ export default function SignUpPage() {
         </div>
       </main>
 
-      <SignUpFooter />
+      <Footer />
     </div>
   );
 }

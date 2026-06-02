@@ -1,7 +1,7 @@
 import TrustedBy from "../components/LandingPage/TrustedBy";
 import Features from "../components/LandingPage/Features";
 import Showcase from "../components/LandingPage/Showcase";
-import AICapabilities from "../components/LandingPage/AICapabilities";
+// import AICapabilities from "../components/LandingPage/AICapabilities";
 
 
 import FAQ from "../components/LandingPage/FAQ";

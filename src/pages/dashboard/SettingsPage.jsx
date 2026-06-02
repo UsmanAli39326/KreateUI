@@ -3,10 +3,12 @@ import { useNavigate } from "react-router-dom";
 import DashboardShell from "@/components/Dashboard/DashboardShell";
 import Button from "@/components/Common/Button";
 import Input from "@/components/Common/Input";
+import { useToast } from "@/components/Common";
 import userService from "../../services/userService";
 import { clearTokens } from "../../services/apiService";
 
 export default function SettingsPage() {
+    const toast = useToast();
     const [activeTab, setActiveTab] = useState("profile");
     const [profile, setProfile] = useState({ name: "", email: "" });
     const [isSaving, setIsSaving] = useState(false);
@@ -15,18 +17,22 @@ export default function SettingsPage() {
     useEffect(() => {
         userService.getProfile()
             .then(res => {
-                if (res.data) setProfile({ name: res.data.name || "", email: res.data.email || "" });
+                // API returns flat user object: { id, name, email, role, ... }
+                if (res) setProfile({ name: res.name || res.data?.name || "", email: res.email || res.data?.email || "" });
             })
-            .catch(err => console.error("Failed to load profile", err));
+            .catch(err => {
+                console.error("Failed to load profile", err);
+                toast.error("Failed to load user profile information.", "Load Error");
+            });
     }, []);
 
     const handleSaveProfile = async () => {
         setIsSaving(true);
         try {
             await userService.updateProfile({ name: profile.name });
-            alert("Profile updated successfully!");
+            toast.success("Profile details updated successfully!", "Success");
         } catch (err) {
-            alert("Failed to update profile");
+            toast.error("Failed to update profile settings.", "Update Error");
         } finally {
             setIsSaving(false);
         }
@@ -37,10 +43,11 @@ export default function SettingsPage() {
         if (!pwd) return;
         try {
             await userService.deleteAccount(pwd);
+            toast.success("Your account has been deleted.", "Deleted");
             clearTokens();
             navigate("/auth");
         } catch (err) {
-            alert(err?.error || "Failed to delete account");
+            toast.error(err?.error || "Failed to delete your account. Please check your password.", "Authentication Error");
         }
     };
 

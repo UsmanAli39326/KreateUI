@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import DashboardShell from "@/components/Dashboard/DashboardShell";
 import Button from "@/components/Common/Button";
+import { useToast } from "@/components/Common";
 import reportData from "@/assets/api/reportData.json";
 import userService from "../../services/userService";
 import auditService from "../../services/auditService";
@@ -43,6 +44,7 @@ function StatusBadge({ status }) {
 }
 
 export default function ReportsPage() {
+    const toast = useToast();
     const [stats] = useState(reportData.stats);
     const [audit, setAudit] = useState(reportData.audit);
     const [loading, setLoading] = useState(true);
@@ -51,13 +53,16 @@ export default function ReportsPage() {
         try {
             setLoading(true);
             const res = await userService.getAudits(1, 10);
-            if (res.data && res.data.length > 0) {
+            // API returns: { audits: [...], total, page, limit }
+            const auditList = res?.audits || res?.data;
+            if (auditList && auditList.length > 0) {
                 // Map API format to UI format, assuming similar structure or fallback to mock
-                // In a real app we would map res.data directly to setAudit(res.data)
-                // setAudit(res.data);
+                // In a real app we would map auditList directly to setAudit(auditList)
+                // setAudit(auditList);
             }
         } catch (err) {
             console.error("Failed to load audits", err);
+            toast.error("Failed to load compliance audit history from server.", "Load Error");
         } finally {
             setLoading(false);
         }
@@ -69,6 +74,7 @@ export default function ReportsPage() {
 
     const handleExportPdf = async (id = 1) => {
         try {
+            toast.info("Generating PDF report...", "Exporting");
             const blob = await auditService.getPdfReport(id);
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement("a");
@@ -76,18 +82,21 @@ export default function ReportsPage() {
             a.download = `audit-report-${id}.pdf`;
             a.click();
             window.URL.revokeObjectURL(url);
+            toast.success("PDF report downloaded successfully!", "Success");
         } catch (err) {
             console.error("Failed to download PDF", err);
+            toast.error("Failed to generate PDF compliance report.", "Export Error");
         }
     };
 
     const handleDeleteAudit = async (id) => {
         try {
             await auditService.deleteAudit(id);
-            alert("Audit deleted");
+            toast.success("Audit report deleted successfully.", "Deleted");
             loadAudits(); // reload after delete
         } catch (err) {
             console.error("Failed to delete audit", err);
+            toast.error("Failed to delete the selected audit report.", "Delete Error");
         }
     };
 
