@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Button from "@/components/Common/Button";
 import marketplaceData from "@/assets/api/marketplaceData.json";
+import marketplaceService from "../services/marketplaceService";
 
 function TemplateCard({ item }) {
     return (
@@ -9,7 +10,7 @@ function TemplateCard({ item }) {
             <div className="relative aspect-video overflow-hidden">
                 <div
                     className="w-full h-full bg-center bg-cover transition-transform duration-500 group-hover:scale-110"
-                    style={{ backgroundImage: `url('${item.image}')` }}
+                    style={{ backgroundImage: `url('${item.image || "https://via.placeholder.com/400x225"}')` }}
                 />
                 {item.badge && (
                     <div className="absolute top-3 left-3">
@@ -24,20 +25,20 @@ function TemplateCard({ item }) {
                 <div className="flex justify-between items-start">
                     <div>
                         <h3 className="font-bold text-lg text-text-1 group-hover:text-accent-1 transition-colors">{item.title}</h3>
-                        <p className="text-xs text-text-3">by {item.author} • {item.tech}</p>
+                        <p className="text-xs text-text-3">by {item.author || "Unknown"} • {item.tech || item.category}</p>
                     </div>
                     <div className="flex items-center gap-2">
                         <div className="relative flex items-center justify-center w-10 h-10">
                             <svg className="w-full h-full transform -rotate-90">
                                 <circle className="text-bg-2" cx="20" cy="20" fill="transparent" r="16" stroke="currentColor" strokeWidth="3"></circle>
-                                <circle className="text-accent-1" cx="20" cy="20" fill="transparent" r="16" stroke="currentColor" strokeDasharray="100.5" strokeDashoffset={100.5 - (100.5 * item.score) / 100} strokeWidth="3"></circle>
+                                <circle className="text-accent-1" cx="20" cy="20" fill="transparent" r="16" stroke="currentColor" strokeDasharray="100.5" strokeDashoffset={100.5 - (100.5 * (item.score || 90)) / 100} strokeWidth="3"></circle>
                             </svg>
-                            <span className="absolute text-[10px] font-bold text-text-1">{item.score}%</span>
+                            <span className="absolute text-[10px] font-bold text-text-1">{item.score || 90}%</span>
                         </div>
                     </div>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                    {item.stack && item.stack.map((stackItem, idx) => (
+                    {(item.stack || []).map((stackItem, idx) => (
                         <span key={idx} className="text-[10px] px-2 py-0.5 rounded bg-bg-2 text-text-3 border border-border-1">{stackItem}</span>
                     ))}
                 </div>
@@ -50,7 +51,40 @@ function TemplateCard({ item }) {
 }
 
 export default function MarketplacePage() {
-    const { featured, items, filters } = marketplaceData;
+    const { featured, filters } = marketplaceData;
+    const [items, setItems] = useState(marketplaceData.items);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        const fetchTemplates = async () => {
+            try {
+                setLoading(true);
+                const res = await marketplaceService.getTemplates(searchQuery);
+                // API may return flat array or { items: [...] }
+                const templatesList = Array.isArray(res) ? res : (res?.items || res?.data);
+                if (templatesList && templatesList.length > 0) {
+                    setItems(templatesList);
+                } else if (searchQuery === "") {
+                    // fallback to mock if empty
+                    setItems(marketplaceData.items);
+                } else {
+                    setItems([]); // empty results
+                }
+            } catch (err) {
+                console.error("Failed to load templates", err);
+                if (searchQuery === "") setItems(marketplaceData.items);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        const timerId = setTimeout(() => {
+            fetchTemplates();
+        }, 300);
+
+        return () => clearTimeout(timerId);
+    }, [searchQuery]);
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 text-text-1">
@@ -60,26 +94,18 @@ export default function MarketplacePage() {
                     <h1 className="text-3xl font-bold tracking-tight mb-2 text-text-1">High-Performance Templates</h1>
                     <p className="text-text-2 max-w-2xl">Discover AI-validated website templates optimized for accessibility, usability, and developer experience.</p>
                 </div>
-                <div className="flex flex-col sm:flex-row gap-3">
-                    <Link to="/marketplace/submit">
-                        <Button
-                            variant="primary"
-                            icon={<span className="material-symbols-outlined">add</span>}
-                            className="shadow-lg shadow-accent-1/20"
-                        >
-                            Submit Template
-                        </Button>
-                    </Link>
-                    <div className="relative max-w-md w-full">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <span className="material-symbols-outlined text-text-3 text-sm">search</span>
-                        </div>
-                        <input
-                            className="block w-full pl-10 pr-3 py-2 border border-border-1 rounded-lg bg-surface-1 text-sm placeholder:text-text-3 focus:outline-none focus:ring-1 focus:ring-accent-1/50 focus:border-accent-1 transition-all text-text-1"
-                            placeholder="Search templates..."
-                            type="text"
-                        />
+                {/* Search Input */}
+                <div className="relative max-w-md w-full">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <span className="material-symbols-outlined text-text-3 text-sm">search</span>
                     </div>
+                    <input
+                        className="block w-full pl-10 pr-3 py-2 border border-border-1 rounded-lg bg-surface-1 text-sm placeholder:text-text-3 focus:outline-none focus:ring-1 focus:ring-accent-1/50 focus:border-accent-1 transition-all text-text-1"
+                        placeholder="Search templates, components..."
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                    />
                 </div>
             </div>
 

@@ -14,12 +14,17 @@ import FixIssuePage from "./pages/dashboard/FixIssuePage.jsx";
 import ReportsPage from "./pages/dashboard/ReportsPage.jsx";
 import SettingsPage from "./pages/dashboard/SettingsPage.jsx";
 import ProjectsPage from "./pages/dashboard/ProjectsPage.jsx";
+import AdminPage from "./pages/dashboard/AdminPage.jsx";
 import AboutContent from "./pages/About.jsx";
 import ContactPageContent from "./pages/ContactPage.jsx";
 import MarketplacePage from "./pages/MarketplacePage.jsx";
 import TemplateDetailPage from "./pages/TemplateDetailPage.jsx";
 import PricingPage from "./pages/PricingPage.jsx";
+import { AuthProvider } from "./context/AuthContext.jsx";
+import ProtectedRoute from "./components/Common/ProtectedRoute.jsx";
+import { ToastProvider } from "./components/Common";
 
+import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage.jsx";
 const SignUpPage = React.lazy(() => import("./pages/auth/SignUpPage.jsx"));
 
 const router = createBrowserRouter([
@@ -39,6 +44,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/dashboard",
+    element: <ProtectedRoute />,
     children: [
       { index: true, element: <OverviewPage /> }, // Default dashboard page
       { path: "analyze", element: <AnalyzePage /> },
@@ -48,6 +54,7 @@ const router = createBrowserRouter([
       { path: "reports", element: <ReportsPage /> },
       { path: "settings", element: <SettingsPage /> },
       { path: "projects", element: <ProjectsPage /> }, // Add ProjectsPage route
+      { path: "admin", element: <AdminPage /> },
     ],
   },
 
@@ -55,6 +62,10 @@ const router = createBrowserRouter([
   {
     path: "/auth",
     element: <Login />,
+  },
+  {
+    path: "/forgot-password",
+    element: <ForgotPasswordPage />,
   },
   {
     path: "/signup",
@@ -96,7 +107,11 @@ const router = createBrowserRouter([
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    <ToastProvider>
+      <AuthProvider>
+        <RouterProvider router={router} />
+      </AuthProvider>
+    </ToastProvider>
   </React.StrictMode>
 );
 

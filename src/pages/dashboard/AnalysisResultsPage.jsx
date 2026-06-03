@@ -1,35 +1,135 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import DashboardShell from "@/components/Dashboard/DashboardShell";
 import Breadcrumbs from "@/components/Dashboard/BreadCrumbs";
 import Badge from "@/components/Common/Badge";
 import Button from "@/components/Common/Button";
-import IssueListItem from "@/components/Dashboard/Analysis/IssueListItem";
-import WcagBreakdown from "@/components/Dashboard/Analysis/WcagBreakdown";
-import IssueDetail from "@/components/Dashboard/Analysis/IssueDetail";
-import mockResults from "@/assets/api/mockAnalysisResults.json";
+import { useToast } from "@/components/Common";
+import mockIssue from "@/assets/api/issueDetails.json";
+import auditService from "../../services/auditService";
+
+function VisualComparison({ visual }) {
+    return (
+        <div className="bg-surface-1 rounded-xl border border-border-1 overflow-hidden">
+            <div className="flex justify-between items-center px-4 py-3 border-b border-border-1 bg-bg-0/30">
+                <h3 className="text-sm font-bold text-text-1 flex items-center gap-2">
+                    <span className="material-symbols-outlined text-accent-1 text-lg">compare</span> Visual Comparison
+                </h3>
+                <div className="flex bg-bg-0 p-1 rounded-lg">
+                    <label className="flex cursor-pointer items-center px-3 py-1 rounded-md bg-surface-1 text-text-1 text-xs font-medium shadow-sm">
+                        <span>Before</span>
+                    </label>
+                    <label className="flex cursor-pointer items-center px-3 py-1 rounded-md text-text-3 hover:text-text-1 text-xs font-medium">
+                        <span>After Fix</span>
+                    </label>
+                </div>
+            </div>
+            <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8 bg-[radial-gradient(#302348_1px,transparent_1px)] [background-size:20px_20px]">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="w-full h-48 bg-[#1a1a20] rounded-lg border-2 border-dashed border-danger/30 flex items-center justify-center relative">
+                        <button
+                            className="px-6 py-2 rounded-md font-medium text-sm"
+                            style={{ backgroundColor: visual.before.bgColor, color: visual.before.textColor }}
+                        >
+                            Subscribe Now
+                        </button>
+                        <div className="absolute top-2 left-2 bg-danger text-white text-[10px] px-1.5 py-0.5 rounded font-bold">
+                            {visual.before.ratio} RATIO
+                        </div>
+                    </div>
+                    <p className="text-xs text-text-3 font-medium uppercase tracking-widest">Current Implementation</p>
+                </div>
+                <div className="flex flex-col items-center gap-4">
+                    <div className="w-full h-48 bg-[#1a1a20] rounded-lg border-2 border-dashed border-success/30 flex items-center justify-center relative">
+                        <button
+                            className="px-6 py-2 rounded-md font-medium text-sm"
+                            style={{ backgroundColor: visual.after.bgColor, color: visual.after.textColor }}
+                        >
+                            Subscribe Now
+                        </button>
+                        <div className="absolute top-2 left-2 bg-success text-white text-[10px] px-1.5 py-0.5 rounded font-bold">
+                            {visual.after.ratio} RATIO
+                        </div>
+                    </div>
+                    <p className="text-xs text-text-3 font-medium uppercase tracking-widest">AI Proposed Fix</p>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function CodeBlock({ code }) {
+    return (
+        <div className="bg-surface-1 rounded-xl border border-border-1 overflow-hidden">
+            <div className="flex justify-between items-center px-4 py-3 border-b border-border-1">
+                <h3 className="text-sm font-bold text-text-1 flex items-center gap-2">
+                    <span className="material-symbols-outlined text-accent-1 text-lg">code</span> Affected Element
+                </h3>
+                <div className="flex items-center gap-4">
+                    <span className="text-text-3 text-xs font-mono">{code.file}</span>
+                    {code.onApplyFix && (
+                        <Button variant="tertiary" size="sm" className="!p-0 h-auto text-xs text-accent-1 hover:text-accent-hover font-bold" onClick={code.onApplyFix}>
+                            Apply Auto-Fix
+                        </Button>
+                    )}
+                </div>
+            </div>
+            <div className="p-4 text-sm leading-relaxed overflow-x-auto bg-[#0d0d10] font-mono">
+                <div className="flex gap-4">
+                    <div className="text-slate-600 text-right select-none w-4 flex flex-col">
+                        {code.preview.map((line, i) => (
+                            <span key={i}>{line.line}</span>
+                        ))}
+                    </div>
+                    <div className="text-slate-300 flex flex-col w-full">
+                        {code.preview.map((line, i) => (
+                            <div key={i} className={line.highlight ? "bg-danger/10 -mx-2 px-2 border-l-2 border-danger" : ""}>
+                                <pre className="font-mono whitespace-pre-wrap">{line.content}</pre>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
 
 export default function AnalysisResultsPage() {
     const [searchParams] = useSearchParams();
-    const url = searchParams.get("url") || mockResults.url;
+    const url = searchParams.get("url") || mockIssue.url;
+    const auditId = searchParams.get("auditId");
+    const toast = useToast();
+    const [showToast, setShowToast] = useState(false);
+    
+    const [issue, setIssue] = useState({ ...mockIssue, url: url });
+    const [isLoading, setIsLoading] = useState(!!auditId);
 
-    // State
-    const [selectedIssue, setSelectedIssue] = useState(null);
-    const [activeCategory, setActiveCategory] = useState("all");
-    const [activeSeverity, setActiveSeverity] = useState("all");
-
-    // Derived state
-    const filteredIssues = useMemo(() => {
-        return mockResults.issues.filter(issue => {
-            const matchesCategory = activeCategory === "all" || issue.category === activeCategory;
-            const matchesSeverity = activeSeverity === "all" || issue.severity === activeSeverity;
-            return matchesCategory && matchesSeverity;
-        });
-    }, [activeCategory, activeSeverity]);
-
-    // Categories and Severities for filters
-    const categories = ["all", ...new Set(mockResults.issues.map(i => i.category))];
-    const severities = ["all", "critical", "high", "medium", "low"];
+    useEffect(() => {
+        if (auditId) {
+            auditService.getRecommendations(auditId)
+                .then(res => {
+                    // API returns: { auditId, recommendations: [...] }
+                    const recs = res?.recommendations || res?.data;
+                    if (recs && recs.length > 0) {
+                        const rec = recs[0];
+                        // In a real app we'd map API fields to UI fields.
+                        // For now we just merge what we can over the mock issue.
+                        setIssue(prev => ({
+                            ...prev,
+                            title: rec.title || prev.title,
+                            description: rec.description || prev.description,
+                            recommendation: rec.suggestion || prev.recommendation,
+                            id: rec.ruleId || prev.id
+                        }));
+                    }
+                })
+                .catch(err => {
+                    console.error("Failed to fetch recommendations", err);
+                    toast.error("Failed to load recommendations from server.", "Error");
+                })
+                .finally(() => setIsLoading(false));
+        }
+    }, [auditId]);
 
     const breadcrumbs = [
         { label: "Workspace", href: "/dashboard" },
@@ -38,25 +138,94 @@ export default function AnalysisResultsPage() {
         ...(selectedIssue ? [{ label: `Issue #${selectedIssue.id}` }] : []),
     ];
 
-    const handleIssueClick = (issue) => {
-        setSelectedIssue(issue);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+    const handleCopyFix = () => {
+        navigator.clipboard.writeText(issue.code.preview.map(l => l.content).join('\n'));
+        toast.success("Fix snippet copied to clipboard!", "Copied");
+        setShowToast(true);
+        setTimeout(() => setShowToast(false), 3000);
+    };
+
+    const handleApplyFix = async () => {
+        if (!auditId) {
+            toast.warning("This is a mock issue, cannot apply auto-fix in preview mode.", "Mock Preview");
+            return;
+        }
+        try {
+            await auditService.acceptSuggestion(auditId, issue.id);
+            toast.success("AI suggestion applied successfully to the source code!", "Success");
+        } catch (err) {
+            console.error(err);
+            toast.error("Failed to automatically apply the proposed fix.", "Error");
+        }
+    };
+
+    const handleRejectFix = async () => {
+        if (!auditId) return;
+        try {
+            await auditService.rejectSuggestion(auditId, issue.id);
+            toast.info("Suggestion rejected.", "Info");
+        } catch (err) {
+            console.error(err);
+            toast.error("Failed to reject the suggestion.", "Error");
+        }
     };
 
     return (
         <DashboardShell active="analyze">
             <Breadcrumbs items={breadcrumbs} />
 
-            {selectedIssue ? (
-                <IssueDetail issue={selectedIssue} onBack={() => setSelectedIssue(null)} />
-            ) : (
-                <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                    {/* Header Section */}
-                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 py-6 border-b border-border-1 mb-8">
-                        <div>
-                            <div className="flex items-center gap-3 mb-2">
-                                <h1 className="text-3xl font-black text-text-1 tracking-tight">Analysis Results</h1>
-                                <Badge variant="neutral" size="sm" className="font-mono">{url}</Badge>
+            {/* Page Heading */}
+            <div className="flex flex-wrap justify-between items-start gap-4 py-6">
+                <div className="flex flex-col gap-2 max-w-2xl">
+                    <div className="flex items-center gap-3">
+                        <Badge variant="critical" size="sm" className="uppercase tracking-wider">
+                            {issue.severity}
+                        </Badge>
+                        <span className="text-text-3 text-xs font-medium uppercase tracking-wider">
+                            Detected: {issue.detectedAt}
+                        </span>
+                    </div>
+                    <h1 className="text-text-1 text-3xl font-black leading-tight tracking-tight">
+                        {issue.title}
+                    </h1>
+                    <p className="text-text-3 text-base font-normal">
+                        {issue.description}
+                    </p>
+                </div>
+                <div className="flex gap-3">
+                    <Button
+                        variant="secondary"
+                        icon={<span className="material-symbols-outlined text-lg">share</span>}
+                    >
+                        Export to Jira
+                    </Button>
+                    <Button
+                        variant="primary"
+                        icon={<span className="material-symbols-outlined text-lg">content_copy</span>}
+                        onClick={handleCopyFix}
+                        className="shadow-lg shadow-accent-1/20"
+                    >
+                        Copy Fix
+                    </Button>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 pb-10">
+                {/* Left Column: Visual & Code */}
+                <div className="lg:col-span-8 flex flex-col gap-6">
+                    <VisualComparison visual={issue.visual} />
+                    <CodeBlock code={{ ...issue.code, onApplyFix: handleApplyFix }} />
+                </div>
+
+                {/* Right Column: Details & Docs */}
+                <div className="lg:col-span-4 flex flex-col gap-6">
+                    {/* Issue Analysis Panel */}
+                    <div className="bg-surface-1 rounded-xl border border-border-1 p-6">
+                        <h3 className="text-base font-bold text-text-1 mb-4">Technical Breakdown</h3>
+                        <div className="space-y-4">
+                            <div className="flex justify-between items-center py-2 border-b border-border-1">
+                                <span className="text-sm text-text-3">Measured Ratio</span>
+                                <span className="text-sm font-bold text-danger">{issue.technical.measuredRatio}</span>
                             </div>
                             <p className="text-text-3">
                                 Scanned on {new Date(mockResults.scannedAt).toLocaleDateString()} at {new Date(mockResults.scannedAt).toLocaleTimeString()}
@@ -154,7 +323,7 @@ export default function AnalysisResultsPage() {
                         </div>
                     </div>
                 </div>
-            )}
+            </div>
         </DashboardShell>
     );
 }

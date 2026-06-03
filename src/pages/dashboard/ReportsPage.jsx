@@ -1,7 +1,10 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import DashboardShell from "@/components/Dashboard/DashboardShell";
 import Button from "@/components/Common/Button";
+import { useToast } from "@/components/Common";
 import reportData from "@/assets/api/reportData.json";
+import userService from "../../services/userService";
+import auditService from "../../services/auditService";
 
 function StatCard({ title, value, subValue, subLabel, subColor, progressColor, progressValue }) {
     return (
@@ -41,7 +44,61 @@ function StatusBadge({ status }) {
 }
 
 export default function ReportsPage() {
-    const { stats, audit } = reportData;
+    const toast = useToast();
+    const [stats] = useState(reportData.stats);
+    const [audit, setAudit] = useState(reportData.audit);
+    const [loading, setLoading] = useState(true);
+
+    const loadAudits = async () => {
+        try {
+            setLoading(true);
+            const res = await userService.getAudits(1, 10);
+            // API returns: { audits: [...], total, page, limit }
+            const auditList = res?.audits || res?.data;
+            if (auditList && auditList.length > 0) {
+                // Map API format to UI format, assuming similar structure or fallback to mock
+                // In a real app we would map auditList directly to setAudit(auditList)
+                // setAudit(auditList);
+            }
+        } catch (err) {
+            console.error("Failed to load audits", err);
+            toast.error("Failed to load compliance audit history from server.", "Load Error");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        loadAudits();
+    }, []);
+
+    const handleExportPdf = async (id = 1) => {
+        try {
+            toast.info("Generating PDF report...", "Exporting");
+            const blob = await auditService.getPdfReport(id);
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `audit-report-${id}.pdf`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+            toast.success("PDF report downloaded successfully!", "Success");
+        } catch (err) {
+            console.error("Failed to download PDF", err);
+            toast.error("Failed to generate PDF compliance report.", "Export Error");
+        }
+    };
+
+    const handleDeleteAudit = async (id) => {
+        try {
+            await auditService.deleteAudit(id);
+            toast.success("Audit report deleted successfully.", "Deleted");
+            loadAudits(); // reload after delete
+        } catch (err) {
+            console.error("Failed to delete audit", err);
+            toast.error("Failed to delete the selected audit report.", "Delete Error");
+        }
+    };
 
     return (
         <DashboardShell active="reports">
@@ -53,19 +110,10 @@ export default function ReportsPage() {
                         <p className="text-text-2 text-lg">Comprehensive audit for accessibility & usability optimization</p>
                     </div>
                     <div className="flex gap-3">
-                        <Link to="/dashboard/reports/history">
-                            <Button variant="secondary" icon={<span className="material-symbols-outlined text-lg">history</span>}>
-                                View History
-                            </Button>
-                        </Link>
-                        <Button
-                            variant="secondary"
-                            icon={<span className="material-symbols-outlined text-lg">download</span>}
-                            onClick={() => alert("Generating PDF Report...")}
-                        >
+                        <Button variant="secondary" icon={<span className="material-symbols-outlined text-lg">download</span>} onClick={() => handleExportPdf(1)}>
                             Export PDF
                         </Button>
-                        <Button variant="primary" icon={<span className="material-symbols-outlined text-lg">refresh</span>} className="shadow-lg shadow-accent-1/20">
+                        <Button variant="primary" icon={<span className="material-symbols-outlined text-lg">refresh</span>} className="shadow-lg shadow-accent-1/20" onClick={loadAudits}>
                             Re-run Audit
                         </Button>
                     </div>

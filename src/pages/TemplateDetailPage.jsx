@@ -1,11 +1,16 @@
-import React from "react";
+import React, { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import Button from "@/components/Common/Button";
 import marketplaceData from "@/assets/api/marketplaceData.json";
+import marketplaceService from "../services/marketplaceService";
+import { useToast } from "@/components/Common";
 
 export default function TemplateDetailPage() {
     const { templateId } = useParams();
+    const toast = useToast();
     const { featured, items } = marketplaceData;
+    const [isPurchasing, setIsPurchasing] = useState(false);
+    const [isDownloading, setIsDownloading] = useState(false);
 
     // Find the template
     let template = null;
@@ -14,6 +19,38 @@ export default function TemplateDetailPage() {
     } else {
         template = items.find((item) => item.id === templateId);
     }
+
+    const handleGetTemplate = async () => {
+        try {
+            setIsPurchasing(true);
+            await marketplaceService.purchaseTemplate(templateId);
+            toast.success("Template purchased successfully!");
+            // After purchase, we could automatically trigger download or change UI state
+        } catch (err) {
+            console.error("Purchase failed", err);
+            toast.error("Failed to purchase template");
+        } finally {
+            setIsPurchasing(false);
+        }
+    };
+
+    const handleDownload = async () => {
+        try {
+            setIsDownloading(true);
+            const blob = await marketplaceService.downloadTemplate(templateId);
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `${templateId}.zip`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        } catch (err) {
+            console.error("Download failed", err);
+            toast.error("Failed to download template. Please make sure you have purchased it.");
+        } finally {
+            setIsDownloading(false);
+        }
+    };
 
     if (!template) {
         return (
@@ -44,7 +81,7 @@ export default function TemplateDetailPage() {
                     <div className="rounded-xl overflow-hidden border border-border-1 bg-surface-1 shadow-lg aspect-video relative group">
                         <div
                             className="w-full h-full bg-center bg-cover"
-                            style={{ backgroundImage: `url('${template.image}')` }}
+                            style={{ backgroundImage: `url('${template.image || "https://via.placeholder.com/800x450"}')` }}
                         />
                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                             <Button variant="secondary" icon={<span className="material-symbols-outlined">visibility</span>}>
@@ -102,16 +139,12 @@ export default function TemplateDetailPage() {
                         </div>
 
                         <div className="space-y-3 mb-8">
-                            <Button variant="primary" fullWidth size="lg">Get Template</Button>
-                            <Button
-                                variant="secondary"
-                                fullWidth
-                                icon={<span className="material-symbols-outlined">sync</span>}
-                                className="border-accent-1 text-accent-1 hover:bg-accent-1/10"
-                            >
-                                Sync to Site
+                            <Button variant="primary" fullWidth size="lg" onClick={handleGetTemplate} disabled={isPurchasing}>
+                                {isPurchasing ? "Processing..." : "Get Template"}
                             </Button>
-                            <Button variant="secondary" fullWidth icon={<span className="material-symbols-outlined">desktop_windows</span>}>Live Preview</Button>
+                            <Button variant="secondary" fullWidth icon={<span className="material-symbols-outlined">download</span>} onClick={handleDownload} disabled={isDownloading}>
+                                {isDownloading ? "Downloading..." : "Download Source ZIP"}
+                            </Button>
                         </div>
 
                         <hr className="border-border-1 mb-6" />

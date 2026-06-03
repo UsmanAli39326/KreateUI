@@ -1,7 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import DashboardShell from "@/components/Dashboard/DashboardShell";
 import Button from "@/components/Common/Button";
-import projectsList from "@/assets/api/projectsList.json";
+import projectsListMock from "@/assets/api/projectsList.json";
+import userService from "../../services/userService";
+import { useToast } from "@/components/Common";
 
 function StatusBadge({ status }) {
     const styles = {
@@ -72,12 +74,47 @@ function ProjectCard({ project }) {
 }
 
 export default function ProjectsPage() {
+    const toast = useToast();
     const [filter, setFilter] = useState("All");
     const [search, setSearch] = useState("");
+    const [projectsList, setProjectsList] = useState(projectsListMock);
+
+    useEffect(() => {
+      const fetchProjects = async () => {
+        try {
+          const res = await userService.getAudits();
+          // API returns: { audits: [...], total, page, limit }
+          const auditList = res?.audits || res?.data;
+          if (auditList && auditList.length > 0) {
+            // Map audits to project format
+            const mappedList = auditList.map(a => ({
+              ...a,
+              id: a.id || a._id,
+              name: a.name || a.targetUrl || "Unknown Project",
+              url: a.url || a.targetUrl || "",
+              status: a.status || "healthy",
+              score: a.score || a.performanceScore || 0,
+              issuesCount: a.issuesCount || 0,
+              framework: a.framework || "Unknown",
+              lastScanned: a.lastScanned || (a.createdAt ? new Date(a.createdAt).toLocaleDateString() : "Unknown"),
+            }));
+            setProjectsList(mappedList);
+          }
+        } catch (err) {
+          console.error("Failed to load projects:", err);
+          toast.error("Failed to load projects.");
+        }
+      };
+      fetchProjects();
+    }, []);
 
     const filteredProjects = projectsList.filter(p => {
-        const matchesType = filter === "All" || p.status.toLowerCase() === filter.toLowerCase();
-        const matchesSearch = p.name.toLowerCase().includes(search.toLowerCase()) || p.url.toLowerCase().includes(search.toLowerCase());
+        const pStatus = p.status || "";
+        const pName = p.name || "";
+        const pUrl = p.url || "";
+        
+        const matchesType = filter === "All" || pStatus.toLowerCase() === filter.toLowerCase();
+        const matchesSearch = pName.toLowerCase().includes(search.toLowerCase()) || pUrl.toLowerCase().includes(search.toLowerCase());
         return matchesType && matchesSearch;
     });
 

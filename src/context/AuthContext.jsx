@@ -1,90 +1,65 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
-import {
-    createUserWithEmailAndPassword,
-    signInWithEmailAndPassword,
-    signOut,
-    onAuthStateChanged,
-    sendPasswordResetEmail,
-    updateProfile
-} from "firebase/auth";
-import { auth } from "../firebase";
-import mockAdminData from "../assets/api/mockAdminData.json";
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import apiService, { getToken, clearTokens, setTokens } from '../services/apiService';
 
 const AuthContext = createContext();
 
-export function useAuth() {
-    return useContext(AuthContext);
-}
+export const useAuth = () => useContext(AuthContext);
 
-export function AuthProvider({ children }) {
-    const [currentUser, setCurrentUser] = useState(null);
-    const [userRole, setUserRole] = useState(null);
-    const [loading, setLoading] = useState(true);
+export const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-    // Mock role fetching based on email
-    // In a real app, this would be a Firestore lookup or custom claim
-    const fetchUserRole = (email) => {
-        if (!email) return "user";
-        // Check if user is in mock admin data
-        const foundUser = mockAdminData.users.find(u => u.email === email);
-        return foundUser ? foundUser.role : "user";
-    };
-
-    // Sign up function
-    function signup(email, password, fullName) {
-        return createUserWithEmailAndPassword(auth, email, password).then((userCredential) => {
-            // Update profile with full name if provided
-            if (fullName) {
-                updateProfile(userCredential.user, {
-                    displayName: fullName
-                });
-            }
-        });
+  const fetchProfile = async () => {
+    try {
+      const response = await apiService.get('/user/profile');
+      setUser(response.data || response); // Adjust depending on actual response shape
+    } catch (error) {
+      console.error('Failed to fetch user profile:', error);
+      clearTokens();
+      setUser(null);
+    } finally {
+      setLoading(false);
     }
+  };
 
-    // Login function
-    function login(email, password) {
-        return signInWithEmailAndPassword(auth, email, password);
+  useEffect(() => {
+    const token = getToken();
+    if (token) {
+      fetchProfile();
+    } else {
+      setLoading(false);
     }
+  }, []);
 
-    // Logout function
-    function logout() {
-        return signOut(auth);
+  const login = async (token, refreshToken) => {
+    setTokens(token, refreshToken);
+    await fetchProfile();
+  };
+
+  const logout = async () => {
+    try {
+      // Optional: inform backend
+      await apiService.post('/auth/logout', {});
+    } catch (e) {
+      console.error('Logout error', e);
+    } finally {
+      clearTokens();
+      setUser(null);
+      window.location.href = '/auth'; // Redirect to login
     }
+  };
 
-    // Reset password function
-    function resetPassword(email) {
-        return sendPasswordResetEmail(auth, email);
-    }
+  const value = {
+    user,
+    loading,
+    login,
+    logout,
+    setUser
+  };
 
-    // Subscribe to auth state changes
-    useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
-            setCurrentUser(user);
-            if (user) {
-                setUserRole(fetchUserRole(user.email));
-            } else {
-                setUserRole(null);
-            }
-            setLoading(false);
-        });
-
-        return unsubscribe;
-    }, []);
-
-    const value = {
-        currentUser,
-        userRole,
-        isAdmin: userRole === "admin",
-        signup,
-        login,
-        logout,
-        resetPassword
-    };
-
-    return (
-        <AuthContext.Provider value={value}>
-            {!loading && children}
-        </AuthContext.Provider>
-    );
-}
+  return (
+    <AuthContext.Provider value={value}>
+      {!loading ? children : <div className="flex h-screen items-center justify-center text-text-1 bg-background-main">Loading...</div>}
+    </AuthContext.Provider>
+  );
+};

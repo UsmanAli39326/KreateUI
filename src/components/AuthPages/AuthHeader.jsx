@@ -4,17 +4,11 @@ import { Button } from "../Common";
 
 export default function AuthHeader({ onSignUpClick }) {
   return (
-    <header className="fixed top-0 w-full z-50 border-b border-white/5 backdrop-blur bg-black/80 px-6 py-4 h-16 flex items-center">
-      <div className="max-w-7xl mx-auto w-full flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-3 min-w-0 group">
-          <div className="text-accent-1 shrink-0 bg-accent-1/10 p-1.5 rounded-lg group-hover:bg-accent-1 group-hover:text-white transition-all">
-            <span className="material-symbols-outlined text-[20px]">auto_fix_high</span>
-          </div>
-
-          <h2 className="text-white text-lg font-black leading-tight tracking-tighter truncate">
-            KREATE UI
-          </h2>
-        </Link>
+    <header className="w-full border-b border-gray-200 dark:border-border-dark px-6 py-4">
+      <div className="max-w-7xl mx-auto flex items-center justify-between">
+        <div className="flex items-center gap-3 min-w-0">
+          <img src="/logo.png" alt="Kreate UI Logo" className="h-10 w-auto object-contain" />
+        </div>
 
         <div className="hidden md:flex items-center gap-8">
           <Link
