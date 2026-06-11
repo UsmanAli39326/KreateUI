@@ -184,7 +184,7 @@ export default function SignUpFormCard({ onContinueGoogle, onContinueGithub }) {
 
         <p className="text-center mt-8 text-sm text-text-3">
           Already a member?{" "}
-          <Link className="text-primary font-bold hover:underline" to="/auth/login">
+          <Link className="text-primary font-bold hover:underline" to="/auth">
             Log in to your account
           </Link>
         </p>

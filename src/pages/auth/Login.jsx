@@ -36,7 +36,7 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex flex-col bg-bg-1 text-text-2">
-      <AuthHeader onSignUpClick={() => navigate("/auth/register")} />
+      <AuthHeader onSignUpClick={() => navigate("/signup")} />
 
       <main className="flex-1 flex items-center justify-center p-6 flex-col">
         {error && <div className="mb-4 text-red-500 bg-red-100 p-3 rounded-lg max-w-sm w-full text-center">{error}</div>}
@@ -50,8 +50,8 @@ export default function Login() {
             // TODO: OAuth redirect
             console.log("google");
           }}
-          onSignUpClick={() => navigate("/auth/register")}
-          onForgotPasswordClick={() => navigate("/auth/reset")}
+          onSignUpClick={() => navigate("/signup")}
+          onForgotPasswordClick={() => navigate("/forgot-password")}
         />
       </main>
 
