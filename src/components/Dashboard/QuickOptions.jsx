@@ -34,6 +34,16 @@ export default function QuickOptions({ options, setOptions }) {
         />
         <span className="text-xs text-text-2">AI Heatmaps</span>
       </label>
+
+      <label className="flex items-center gap-2 cursor-pointer">
+        <input
+          type="checkbox"
+          checked={options.aiRecommendations}
+          onChange={(e) => setOptions((o) => ({ ...o, aiRecommendations: e.target.checked }))}
+          className="rounded border-border-2 text-accent-1 focus:ring-accent-1 bg-transparent"
+        />
+        <span className="text-xs text-text-2">AI Recommendations</span>
+      </label>
     </div>
   );
 }

@@ -40,6 +40,20 @@ function Icon({ name }) {
           <path d="M14 2v6h6" />
         </svg>
       );
+    case "bug_report":
+      return (
+        <svg {...common}>
+          <rect x="8" y="6" width="8" height="14" rx="4" />
+          <path d="M6 10h2" />
+          <path d="M16 10h2" />
+          <path d="M6 14h2" />
+          <path d="M16 14h2" />
+          <path d="M6 18h2" />
+          <path d="M16 18h2" />
+          <path d="M9 6V4" />
+          <path d="M15 6V4" />
+        </svg>
+      );
     case "settings":
       return (
         <svg {...common}>

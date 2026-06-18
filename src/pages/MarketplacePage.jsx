@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import Button from "@/components/Common/Button";
 import marketplaceData from "@/assets/api/marketplaceData.json";
 import marketplaceService from "../services/marketplaceService";
+import EmptyState from "@/components/Common/EmptyState";
+import Spinner from "@/components/Common/Spinner";
 
 function TemplateCard({ item }) {
     return (
@@ -62,18 +64,24 @@ export default function MarketplacePage() {
                 setLoading(true);
                 const res = await marketplaceService.getTemplates(searchQuery);
                 // API may return flat array or { items: [...] }
-                const templatesList = Array.isArray(res) ? res : (res?.items || res?.data);
+                let templatesList = Array.isArray(res) ? res : (res?.items || res?.data);
+                
+                if (templatesList) {
+                    templatesList = templatesList.map(item => ({
+                        ...item,
+                        id: item._id || item.id,
+                        image: item.imagePath ? (item.imagePath.startsWith('http') ? item.imagePath : marketplaceService.getStaticFile(item.imagePath)) : item.image,
+                    }));
+                }
+
                 if (templatesList && templatesList.length > 0) {
                     setItems(templatesList);
-                } else if (searchQuery === "") {
-                    // fallback to mock if empty
-                    setItems(marketplaceData.items);
                 } else {
                     setItems([]); // empty results
                 }
             } catch (err) {
                 console.error("Failed to load templates", err);
-                if (searchQuery === "") setItems(marketplaceData.items);
+                setItems([]);
             } finally {
                 setLoading(false);
             }
@@ -81,7 +89,7 @@ export default function MarketplacePage() {
 
         const timerId = setTimeout(() => {
             fetchTemplates();
-        }, 300);
+        }, 400);
 
         return () => clearTimeout(timerId);
     }, [searchQuery]);
@@ -187,11 +195,21 @@ export default function MarketplacePage() {
             </div>
 
             {/* Template Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {items && items.map((item) => (
-                    <TemplateCard key={item.id} item={item} />
-                ))}
-            </div>
+            {loading ? (
+                <div className="flex justify-center py-12">
+                    <Spinner size="lg" />
+                </div>
+            ) : items && items.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {items.map((item) => (
+                        <TemplateCard key={item.id} item={item} />
+                    ))}
+                </div>
+            ) : (
+                <div className="py-8">
+                    <EmptyState message="No templates found. Try a different search." />
+                </div>
+            )}
 
             {/* Load More */}
             <div className="mt-12 flex flex-col items-center gap-4">

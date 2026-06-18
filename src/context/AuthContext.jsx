@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import apiService, { getToken, clearTokens, setTokens } from '../services/apiService';
+import PageLoader from '../components/Common/PageLoader';
 
 const AuthContext = createContext();
 
@@ -59,7 +60,7 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider value={value}>
-      {!loading ? children : <div className="flex h-screen items-center justify-center text-text-1 bg-background-main">Loading...</div>}
+      {!loading ? children : <PageLoader message="Loading..." isFullScreen={true} />}
     </AuthContext.Provider>
   );
 };

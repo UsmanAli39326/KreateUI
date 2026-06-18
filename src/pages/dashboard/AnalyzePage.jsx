@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import DashboardShell from "@/components/Dashboard/DashboardShell";
 import Breadcrumbs from "@/components/Dashboard/BreadCrumbs";
@@ -6,7 +6,8 @@ import PageHeader from "@/components/Dashboard/PageHeader";
 import AnalyzeBar from "@/components/Dashboard/AnalyzeBar";
 import QuickOptions from "@/components/Dashboard/QuickOptions";
 import RecentScans from "@/components/Dashboard/RecentScans";
-
+import { useToast } from "@/components/Common";
+import userService from "../../services/userService";
 
 import initialScans from "@/assets/api/RecentScans.json";
 import defaultOptions from "@/assets/api/defaultOptions.json";
@@ -19,10 +20,39 @@ function isValidUrlLike(v) {
 
 export default function AnalyzeDashboard() {
   const navigate = useNavigate();
+  const toast = useToast();
   const [url, setUrl] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [options, setOptions] = useState(defaultOptions);
-  const [scans] = useState(initialScans);
+  const [options, setOptions] = useState(() => {
+    const saved = localStorage.getItem("kreate_ai_pref");
+    if (saved !== null) {
+      return { ...defaultOptions, aiRecommendations: JSON.parse(saved) };
+    }
+    return defaultOptions;
+  });
+  const [scans, setScans] = useState([]);
+
+  useEffect(() => {
+    userService.getAudits(1, 5)
+      .then(res => {
+        const audits = res?.data?.audits || res?.audits || [];
+        const mappedScans = audits.map(audit => ({
+          ...audit,
+          url: audit.name || "Unknown",
+          date: audit.createdAt || "Unknown",
+          score: audit.score || 0
+        }));
+        setScans(mappedScans);
+      })
+      .catch(err => {
+        console.error("Failed to fetch audits for scans", err);
+        setScans(initialScans);
+      });
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("kreate_ai_pref", JSON.stringify(options.aiRecommendations));
+  }, [options.aiRecommendations]);
 
   const breadcrumbs = useMemo(
     () => [{ label: "Workspace", href: "/dashboard" }, { label: "Analyze Website" }],
@@ -31,15 +61,30 @@ export default function AnalyzeDashboard() {
 
   const canAnalyze = isValidUrlLike(url) && !isAnalyzing;
 
-  const onAnalyze = () => {
+  const onAnalyze = async () => {
     if (!canAnalyze) return;
 
     setIsAnalyzing(true);
 
     const formattedUrl = url.startsWith("http://") || url.startsWith("https://") ? url : `https://${url}`;
 
+    let aiParam = options.aiRecommendations;
+    try {
+      const res = await fetch("https://webuifixer.onrender.com/health");
+      const data = await res.json();
+      if (!data.aiEngine || data.aiEngine === "down") {
+        setOptions((prev) => ({ ...prev, aiRecommendations: false }));
+        aiParam = false;
+        toast.warning("AI engine is currently unavailable — running standard audit.");
+      }
+    } catch (err) {
+      setOptions((prev) => ({ ...prev, aiRecommendations: false }));
+      aiParam = false;
+      toast.warning("AI engine is currently unavailable — running standard audit.");
+    }
+
     // Navigate to the in-progress page with URL as query param
-    navigate(`/dashboard/analyze/progress?url=${encodeURIComponent(formattedUrl)}`);
+    navigate(`/dashboard/analyze/progress?url=${encodeURIComponent(formattedUrl)}&ai=${aiParam}`);
   };
 
   return (

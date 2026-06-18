@@ -7,7 +7,7 @@ export default function Navbar() {
     { label: "About", href: "/about", type: "route" },
     { label: "Contact Us", href: "/contact", type: "route" },
     { label: "Marketplace", href: "/marketplace", type: "route" },
-    { label: "Pricing", href: "/pricing", type: "route" },
+    // { label: "Pricing", href: "/pricing", type: "route" },
   ];
 
   const [open, setOpen] = useState(false);

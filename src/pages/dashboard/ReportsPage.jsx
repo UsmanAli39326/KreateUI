@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import DashboardShell from "@/components/Dashboard/DashboardShell";
 import Button from "@/components/Common/Button";
 import { useToast } from "@/components/Common";
@@ -45,20 +46,50 @@ function StatusBadge({ status }) {
 
 export default function ReportsPage() {
     const toast = useToast();
-    const [stats] = useState(reportData.stats);
+    const navigate = useNavigate();
+    const [stats, setStats] = useState(reportData.stats);
     const [audit, setAudit] = useState(reportData.audit);
     const [loading, setLoading] = useState(true);
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
 
-    const loadAudits = async () => {
+    const loadStats = async () => {
+        try {
+            const res = await userService.getStats();
+            if (res) {
+                setStats({
+                    overall: { score: res.accessibilityScore || 0, trend: 0 },
+                    levelA: { score: res.accessibilityScore || 0 },
+                    levelAA: { score: Math.round((res.accessibilityScore || 0) * 0.9) },
+                    levelAAA: { score: Math.round((res.accessibilityScore || 0) * 0.7) }
+                });
+            }
+        } catch (err) {
+            console.error("Failed to load stats", err);
+        }
+    };
+
+    const loadAudits = async (currentPage = 1) => {
         try {
             setLoading(true);
-            const res = await userService.getAudits(1, 10);
+            const res = await userService.getAudits(currentPage, 10);
             // API returns: { audits: [...], total, page, limit }
             const auditList = res?.audits || res?.data;
+            if (res?.total) {
+                setTotalPages(Math.ceil(res.total / (res.limit || 10)));
+            }
             if (auditList && auditList.length > 0) {
-                // Map API format to UI format, assuming similar structure or fallback to mock
-                // In a real app we would map auditList directly to setAudit(auditList)
-                // setAudit(auditList);
+                const mappedAudits = auditList.map(a => ({
+                    id: a.id,
+                    criterion: a.name,
+                    level: "AA",
+                    status: a.score >= 80 ? "Pass" : "Fail",
+                    impact: a.score < 50 ? "Critical" : a.score < 80 ? "Moderate" : "Minor",
+                    description: `${a.summary?.issueCount || 0} issues found`
+                }));
+                setAudit(mappedAudits);
+            } else {
+                setAudit([]);
             }
         } catch (err) {
             console.error("Failed to load audits", err);
@@ -69,8 +100,9 @@ export default function ReportsPage() {
     };
 
     useEffect(() => {
-        loadAudits();
-    }, []);
+        loadAudits(page);
+        loadStats();
+    }, [page]);
 
     const handleExportPdf = async (id = 1) => {
         try {
@@ -110,10 +142,21 @@ export default function ReportsPage() {
                         <p className="text-text-2 text-lg">Comprehensive audit for accessibility & usability optimization</p>
                     </div>
                     <div className="flex gap-3">
-                        <Button variant="secondary" icon={<span className="material-symbols-outlined text-lg">download</span>} onClick={() => handleExportPdf(1)}>
+                        <Button 
+                            variant="secondary" 
+                            icon={<span className="material-symbols-outlined text-lg">download</span>} 
+                            onClick={() => handleExportPdf(audit[0]?.id)}
+                            disabled={!audit || audit.length === 0}
+                            title={(!audit || audit.length === 0) ? "Run an audit first." : ""}
+                        >
                             Export PDF
                         </Button>
-                        <Button variant="primary" icon={<span className="material-symbols-outlined text-lg">refresh</span>} className="shadow-lg shadow-accent-1/20" onClick={loadAudits}>
+                        <Button 
+                            variant="primary" 
+                            icon={<span className="material-symbols-outlined text-lg">refresh</span>} 
+                            className="shadow-lg shadow-accent-1/20" 
+                            onClick={() => navigate('/dashboard/analyze')}
+                        >
                             Re-run Audit
                         </Button>
                     </div>
@@ -237,48 +280,28 @@ export default function ReportsPage() {
                         </tbody>
                     </table>
                     <div className="px-6 py-4 bg-bg-0 border-t border-border-1 flex justify-between items-center">
-                        <span className="text-xs text-text-3">Showing page 1 of 4</span>
+                        <span className="text-xs text-text-3">Showing page {page} of {totalPages}</span>
                         <div className="flex gap-2">
-                            <button className="size-8 flex items-center justify-center rounded border border-border-1 text-text-3 disabled:opacity-50" disabled>
+                            <button 
+                                className="size-8 flex items-center justify-center rounded border border-border-1 text-text-3 disabled:opacity-50 hover:bg-surface-2 transition-colors" 
+                                disabled={page === 1}
+                                onClick={() => setPage(p => Math.max(1, p - 1))}
+                            >
                                 <span className="material-symbols-outlined text-sm">chevron_left</span>
                             </button>
-                            <button className="size-8 flex items-center justify-center rounded bg-accent-1 text-white text-xs font-bold">1</button>
-                            <button className="size-8 flex items-center justify-center rounded border border-border-1 text-text-3 hover:bg-surface-2 text-xs font-bold">2</button>
-                            <button className="size-8 flex items-center justify-center rounded border border-border-1 text-text-3 hover:bg-surface-2">
+                            <button className="size-8 flex items-center justify-center rounded bg-accent-1 text-white text-xs font-bold">{page}</button>
+                            <button 
+                                className="size-8 flex items-center justify-center rounded border border-border-1 text-text-3 disabled:opacity-50 hover:bg-surface-2 transition-colors"
+                                disabled={page >= totalPages}
+                                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                            >
                                 <span className="material-symbols-outlined text-sm">chevron_right</span>
                             </button>
                         </div>
                     </div>
                 </div>
 
-                {/* Documentation & Collaboration */}
-                <div className="mt-8 flex flex-col md:flex-row gap-6 pb-8">
-                    <div className="flex-1 bg-gradient-to-br from-accent-1/10 to-transparent p-6 rounded-xl border border-accent-1/20 flex gap-4 items-start">
-                        <div className="bg-accent-1/20 p-3 rounded-lg text-accent-1">
-                            <span className="material-symbols-outlined">description</span>
-                        </div>
-                        <div>
-                            <h4 className="font-bold text-lg mb-1 text-text-1">Documentation & Resources</h4>
-                            <p className="text-sm text-text-3 mb-4 leading-relaxed">Access official W3C guidelines and common remediation code snippets to help your team resolve failures efficiently.</p>
-                            <a href="#" className="text-accent-1 font-bold text-sm flex items-center gap-1 hover:underline">
-                                Browse Docs <span className="material-symbols-outlined text-sm">open_in_new</span>
-                            </a>
-                        </div>
-                    </div>
 
-                    <div className="flex-1 bg-surface-1 p-6 rounded-xl border border-border-1 flex gap-4 items-start shadow-sm">
-                        <div className="bg-bg-2 p-3 rounded-lg text-text-3">
-                            <span className="material-symbols-outlined">group</span>
-                        </div>
-                        <div>
-                            <h4 className="font-bold text-lg mb-1 text-text-1">Collaboration</h4>
-                            <p className="text-sm text-text-3 mb-4 leading-relaxed">Assign specific failure points to your developers or QA team and track remediation progress in real-time.</p>
-                            <a href="#" className="text-text-1 font-bold text-sm flex items-center gap-1 hover:text-accent-1 transition-colors">
-                                Assign Tasks <span className="material-symbols-outlined text-sm">arrow_forward</span>
-                            </a>
-                        </div>
-                    </div>
-                </div>
             </div>
         </DashboardShell>
     );

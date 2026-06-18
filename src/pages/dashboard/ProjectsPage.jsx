@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import DashboardShell from "@/components/Dashboard/DashboardShell";
 import Button from "@/components/Common/Button";
-import projectsListMock from "@/assets/api/projectsList.json";
 import userService from "../../services/userService";
 import { useToast } from "@/components/Common";
+import Skeleton from "@/components/Common/Skeleton";
+import ErrorState from "@/components/Common/ErrorState";
 
 function StatusBadge({ status }) {
     const styles = {
@@ -77,36 +78,47 @@ export default function ProjectsPage() {
     const toast = useToast();
     const [filter, setFilter] = useState("All");
     const [search, setSearch] = useState("");
-    const [projectsList, setProjectsList] = useState(projectsListMock);
+    const [projectsList, setProjectsList] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(false);
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
 
     useEffect(() => {
       const fetchProjects = async () => {
+        setLoading(true);
+        setError(false);
         try {
-          const res = await userService.getAudits();
+          const res = await userService.getAudits(page, 10);
           // API returns: { audits: [...], total, page, limit }
-          const auditList = res?.audits || res?.data;
-          if (auditList && auditList.length > 0) {
-            // Map audits to project format
-            const mappedList = auditList.map(a => ({
-              ...a,
-              id: a.id || a._id,
-              name: a.name || a.targetUrl || "Unknown Project",
-              url: a.url || a.targetUrl || "",
-              status: a.status || "healthy",
-              score: a.score || a.performanceScore || 0,
-              issuesCount: a.issuesCount || 0,
-              framework: a.framework || "Unknown",
-              lastScanned: a.lastScanned || (a.createdAt ? new Date(a.createdAt).toLocaleDateString() : "Unknown"),
-            }));
-            setProjectsList(mappedList);
-          }
+          const data = res?.data || res || {};
+          const auditList = data.audits || [];
+          
+          // Map audits to project format
+          const mappedList = auditList.map(a => ({
+            ...a,
+            id: a.id || a._id || Math.random().toString(),
+            name: a.name || "—",
+            url: a.url || a.targetUrl || "—",
+            status: a.status || "healthy",
+            score: a.score || 0,
+            issuesCount: a.summary?.issueCount || a.issuesCount || 0,
+            framework: a.framework || "—",
+            lastScanned: a.createdAt ? new Date(a.createdAt).toLocaleDateString() : (a.lastScanned || "—"),
+            icon: a.icon || "web",
+          }));
+          setProjectsList(mappedList);
+          setTotalPages(data.totalPages || 1);
         } catch (err) {
           console.error("Failed to load projects:", err);
+          setError(true);
           toast.error("Failed to load projects.");
+        } finally {
+          setLoading(false);
         }
       };
       fetchProjects();
-    }, []);
+    }, [page, toast]);
 
     const filteredProjects = projectsList.filter(p => {
         const pStatus = p.status || "";
@@ -158,18 +170,54 @@ export default function ProjectsPage() {
             </div>
 
             {/* Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 pb-12">
-                {filteredProjects.map((project) => (
-                    <ProjectCard key={project.id} project={project} />
-                ))}
-            </div>
-
-            {filteredProjects.length === 0 && (
-                <div className="text-center py-20 bg-surface-1 border border-border-1 rounded-xl border-dashed">
-                    <span className="material-symbols-outlined text-4xl text-text-3/50 mb-4">folder_off</span>
-                    <h3 className="text-lg font-bold text-text-1">No projects found</h3>
-                    <p className="text-text-3">Try adjusting your filters or create a new project.</p>
+            {loading ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 pb-12">
+                    {[1, 2, 3, 4, 5, 6].map(i => (
+                        <div key={i} className="bg-surface-1 border border-border-1 rounded-xl p-5 h-56 flex flex-col">
+                            <Skeleton height="100%" className="rounded-lg" />
+                        </div>
+                    ))}
                 </div>
+            ) : error ? (
+                <ErrorState title="Failed to load projects" onRetry={() => setPage(page)} />
+            ) : (
+                <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 pb-12">
+                        {filteredProjects.map((project) => (
+                            <ProjectCard key={project.id} project={project} />
+                        ))}
+                    </div>
+
+                    {filteredProjects.length === 0 && (
+                        <div className="text-center py-20 bg-surface-1 border border-border-1 rounded-xl border-dashed">
+                            <span className="material-symbols-outlined text-4xl text-text-3/50 mb-4">folder_off</span>
+                            <h3 className="text-lg font-bold text-text-1">No projects found</h3>
+                            <p className="text-text-3">Try adjusting your filters or create a new project.</p>
+                        </div>
+                    )}
+                    
+                    {totalPages > 1 && (
+                        <div className="flex justify-center items-center gap-4 pb-12">
+                            <Button 
+                                variant="secondary" 
+                                onClick={() => setPage(p => Math.max(1, p - 1))}
+                                disabled={page === 1}
+                            >
+                                Previous
+                            </Button>
+                            <span className="text-sm font-medium text-text-2">
+                                Page {page} of {totalPages}
+                            </span>
+                            <Button 
+                                variant="secondary" 
+                                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                                disabled={page === totalPages}
+                            >
+                                Next
+                            </Button>
+                        </div>
+                    )}
+                </>
             )}
         </DashboardShell>
     );

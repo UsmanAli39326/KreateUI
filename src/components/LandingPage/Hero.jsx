@@ -1,4 +1,6 @@
-import React, { Suspense } from "react";
+import React, { Suspense, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 import { motion } from "framer-motion";
 
 const fadeUp = {
@@ -13,10 +15,24 @@ const fadeUp = {
 const trustedLogos = ["FORGE", "NEXUS", "VELOCITY", "OVERLAY", "STRATUM"];
 
 export default function Hero({ onAnalyze }) {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const [urlError, setUrlError] = useState(false);
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    const url = new FormData(e.currentTarget).get("url");
-    onAnalyze?.(url);
+    const rawUrl = new FormData(e.currentTarget).get("url");
+    if (!rawUrl) {
+      setUrlError(true);
+      return;
+    }
+    setUrlError(false);
+    const formattedUrl = rawUrl.startsWith("http://") || rawUrl.startsWith("https://") ? rawUrl : `https://${rawUrl}`;
+    if (user) {
+      navigate(`/dashboard/analyze/progress?url=${encodeURIComponent(formattedUrl)}&ai=true`);
+    } else {
+      navigate(`/auth?redirect=${encodeURIComponent('/dashboard/analyze/progress?url=' + encodeURIComponent(formattedUrl))}`);
+    }
   };
 
   return (
@@ -96,6 +112,7 @@ export default function Hero({ onAnalyze }) {
                   placeholder="Describe your next website…"
                   className="w-full bg-white border border-border-1 rounded-2xl py-4 pl-12 pr-4 text-text-1 placeholder:text-text-3 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all shadow-ambient text-base"
                 />
+                {urlError && <p className="text-red-500 text-sm mt-1 absolute -bottom-6 left-2">Please enter a valid URL to analyze.</p>}
               </div>
 
               <button

@@ -1,15 +1,20 @@
 import React from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import PageLoader from "../Common/PageLoader";
 
 /**
  * PublicRoute prevents authenticated users from accessing public-only pages 
  * like Login and Sign Up.
  */
 export default function PublicRoute({ children }) {
-    const { currentUser } = useAuth();
+    const { user, loading } = useAuth();
 
-    if (currentUser) {
+    if (loading) {
+        return <PageLoader message="Loading..." isFullScreen={true} />;
+    }
+
+    if (user) {
         // If logged in, redirect to dashboard
         return <Navigate to="/dashboard" replace />;
     }

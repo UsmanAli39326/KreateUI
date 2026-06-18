@@ -24,7 +24,8 @@ export default function Login() {
         const refreshToken = res.data?.refreshToken || res.refreshToken;
         await login(token, refreshToken);
         toast.success("Welcome back! Loading your workspace...", "Signed In");
-        navigate("/dashboard");
+        const redirectTo = new URLSearchParams(window.location.search).get('redirect');
+        navigate(redirectTo ? decodeURIComponent(redirectTo) : '/dashboard');
       }
     } catch (err) {
       console.error("Login failed:", err);

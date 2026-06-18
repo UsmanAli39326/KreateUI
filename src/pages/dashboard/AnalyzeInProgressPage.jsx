@@ -14,6 +14,12 @@ const analysisSteps = [
     { id: 6, label: "Generating AI insights", icon: "ai" },
 ];
 
+const analysisTips = [
+    "💡 AI analysis typically takes 30–60 seconds for most sites.",
+    "🔍 We check 50+ WCAG 2.1 criteria across your entire page.",
+    "⚡ Results include auto-fix suggestions for every issue found."
+];
+
 function StepIcon({ name, isActive, isComplete }) {
     const baseClass = "size-5";
     const color = isComplete ? "text-success" : isActive ? "text-accent-1" : "text-text-3";
@@ -71,6 +77,7 @@ export default function AnalyzeInProgressPage() {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const url = searchParams.get("url") || "example.com";
+    const ai = searchParams.get("ai");
     const toast = useToast();
 
     const [currentStep, setCurrentStep] = useState(0);
@@ -79,6 +86,14 @@ export default function AnalyzeInProgressPage() {
     const [isComplete, setIsComplete] = useState(false);
     const [auditId, setAuditId] = useState(null);
     const [auditError, setAuditError] = useState(null);
+    const [currentTipIndex, setCurrentTipIndex] = useState(0);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setCurrentTipIndex((prev) => (prev + 1) % analysisTips.length);
+        }, 4000);
+        return () => clearInterval(interval);
+    }, []);
 
     const breadcrumbs = [
         { label: "Workspace", href: "/dashboard" },
@@ -87,7 +102,7 @@ export default function AnalyzeInProgressPage() {
     ];
 
     const runAudit = (targetUrl) => {
-        auditService.startAudit(targetUrl, true)
+        auditService.startAudit(targetUrl, ai === 'true')
             .then(res => {
                 // API returns flat: { id, url, summary, issues, ... }
                 const auditIdValue = res?.id || res?.data?.id;
@@ -181,14 +196,21 @@ export default function AnalyzeInProgressPage() {
                         <>
                             {/* Header */}
                             <div className="text-center mb-8">
-                                <div className="inline-flex items-center justify-center size-16 bg-accent-1/10 rounded-full mb-4">
+                                <div className="inline-flex items-center justify-center size-16 bg-accent-1/10 rounded-full mb-4 relative">
                                     {isComplete ? (
                                         <svg className="size-8 text-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                             <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
                                             <polyline points="22 4 12 14.01 9 11.01" />
                                         </svg>
                                     ) : (
-                                        <div className="size-8 border-3 border-accent-1 border-t-transparent rounded-full animate-spin" />
+                                        <div className="relative size-12 flex items-center justify-center">
+                                            {/* Outer: pulses opacity */}
+                                            <div className="absolute inset-0 border-2 border-accent-1/40 rounded-full animate-pulse" />
+                                            {/* Middle: spins medium */}
+                                            <div className="absolute inset-1.5 border-2 border-accent-1 border-t-transparent rounded-full animate-spin" style={{ animationDuration: '1.5s' }} />
+                                            {/* Inner: spins fast */}
+                                            <div className="absolute inset-3 border-2 border-accent-1 border-b-transparent rounded-full animate-spin" style={{ animationDuration: '0.5s', animationDirection: 'reverse' }} />
+                                        </div>
                                     )}
                                 </div>
                                 <h1 className="text-2xl font-bold text-text-1 mb-2">
@@ -205,11 +227,18 @@ export default function AnalyzeInProgressPage() {
                                     <span>Progress</span>
                                     <span>{Math.round(progress)}%</span>
                                 </div>
-                                <div className="h-2 bg-bg-0 rounded-full overflow-hidden">
-                                    <div
-                                        className="h-full bg-gradient-to-r from-accent-1 to-accent-hover rounded-full transition-all duration-300 ease-out"
-                                        style={{ width: `${progress}%` }}
-                                    />
+                                <div className="flex gap-1.5 h-2">
+                                    {analysisSteps.map((_, idx) => {
+                                        const isSegmentComplete = idx < currentStep || isComplete;
+                                        return (
+                                            <div
+                                                key={idx}
+                                                className={`flex-1 rounded-full transition-colors duration-300 ${
+                                                    isSegmentComplete ? "bg-accent-1" : "bg-bg-0"
+                                                }`}
+                                            />
+                                        );
+                                    })}
                                 </div>
                             </div>
 
@@ -222,15 +251,20 @@ export default function AnalyzeInProgressPage() {
                                     return (
                                         <div
                                             key={step.id}
-                                            className={`flex items-center gap-3 p-3 rounded-lg transition-all duration-300 ${isActive
-                                                ? "bg-accent-1/10 border border-accent-1/20"
+                                            className={`flex items-center gap-3 p-3 rounded-lg transition-all duration-300 relative overflow-hidden ${isActive
+                                                ? "border border-accent-1/20"
                                                 : isStepComplete
                                                     ? "bg-success/5 border border-success/10"
                                                     : "bg-bg-0/50 border border-transparent"
                                                 }`}
                                         >
+                                            {/* Shimmer effect for active step */}
+                                            {isActive && (
+                                                <div className="absolute inset-0 bg-gradient-to-r from-accent-1/5 via-accent-1/15 to-accent-1/5 animate-pulse" />
+                                            )}
+
                                             {/* Step indicator */}
-                                            <div className={`flex items-center justify-center size-8 rounded-full ${isStepComplete
+                                            <div className={`relative flex items-center justify-center size-8 rounded-full ${isStepComplete
                                                 ? "bg-success/20"
                                                 : isActive
                                                     ? "bg-accent-1/20"
@@ -244,7 +278,7 @@ export default function AnalyzeInProgressPage() {
                                             </div>
 
                                             {/* Step label */}
-                                            <span className={`text-sm font-medium ${isStepComplete
+                                            <span className={`relative text-sm font-medium ${isStepComplete
                                                 ? "text-success"
                                                 : isActive
                                                     ? "text-accent-1"
@@ -255,7 +289,7 @@ export default function AnalyzeInProgressPage() {
 
                                             {/* Loading indicator for active step */}
                                             {isActive && (
-                                                <div className="ml-auto">
+                                                <div className="relative ml-auto">
                                                     <div className="size-4 border-2 border-accent-1 border-t-transparent rounded-full animate-spin" />
                                                 </div>
                                             )}
@@ -290,9 +324,9 @@ export default function AnalyzeInProgressPage() {
                 </div>
 
                 {/* Tips */}
-                <div className="mt-8 text-center max-w-md">
-                    <p className="text-text-3 text-xs">
-                        💡 <span className="font-medium">Tip:</span> Analysis typically takes 30 seconds to 2 minutes depending on the website size.
+                <div className="mt-8 text-center max-w-md h-8 flex items-center justify-center">
+                    <p className="text-text-3 text-sm transition-opacity duration-500">
+                        {analysisTips[currentTipIndex]}
                     </p>
                 </div>
             </div>
