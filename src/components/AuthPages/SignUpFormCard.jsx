@@ -1,29 +1,105 @@
 // src/pages/Auth/SignUp/SignUpFormCard.jsx
-import React, { useState } from "react";
-import { Button, Input, Card } from "../Common"
-import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
+import React, { useState, useMemo } from "react";
+import { Button, Input, Card } from "../Common";
+import { Link } from "react-router-dom";
 
-export default function SignUpFormCard({ onContinueGoogle, onContinueGithub }) {
-  const navigate = useNavigate();
-  const { signup } = useAuth();
+// Password rules — must match the API's backend validation exactly
+const PASSWORD_RULES = [
+  {
+    id: "length",
+    label: "At least 8 characters",
+    test: (pw) => pw.length >= 8,
+  },
+  {
+    id: "uppercase",
+    label: "At least 1 uppercase letter (A–Z)",
+    test: (pw) => /[A-Z]/.test(pw),
+  },
+  {
+    id: "number",
+    label: "At least 1 number (0–9)",
+    test: (pw) => /[0-9]/.test(pw),
+  },
+];
+
+function PasswordRequirements({ password, show }) {
+  if (!show) return null;
+
+  return (
+    <div className="mt-2 p-3 rounded-lg bg-bg-2 border border-border-1 flex flex-col gap-1.5">
+      <p className="text-xs font-semibold text-text-3 uppercase tracking-wider mb-1">
+        Password requirements
+      </p>
+      {PASSWORD_RULES.map((rule) => {
+        const passed = rule.test(password);
+        return (
+          <div key={rule.id} className="flex items-center gap-2">
+            <span
+              className={`flex-shrink-0 w-4 h-4 rounded-full flex items-center justify-center transition-colors duration-200 ${
+                passed ? "bg-green-500" : "bg-bg-3 border border-border-2"
+              }`}
+            >
+              {passed && (
+                <svg
+                  width="10"
+                  height="10"
+                  viewBox="0 0 12 12"
+                  fill="none"
+                  stroke="white"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <polyline points="2 6 5 9 10 3" />
+                </svg>
+              )}
+            </span>
+            <span
+              className={`text-xs transition-colors duration-200 ${
+                passed ? "text-green-500" : "text-text-3"
+              }`}
+            >
+              {rule.label}
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+export default function SignUpFormCard({ onSubmit, onContinueGoogle, onContinueGithub }) {
   const [fullName, setFullName] = useState("");
   const [workEmail, setWorkEmail] = useState("");
   const [company, setCompany] = useState("");
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [agree, setAgree] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [pwTouched, setPwTouched] = useState(false);
+
+  // Validate password against all rules
+  const pwValidation = useMemo(
+    () => PASSWORD_RULES.map((rule) => ({ ...rule, passed: rule.test(password) })),
+    [password]
+  );
+  const isPasswordValid = pwValidation.every((r) => r.passed);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!onSubmit || !isPasswordValid) return;
+    setIsLoading(true);
     try {
-      await signup(workEmail, password, fullName);
-      navigate("/dashboard");
+      await onSubmit({ fullName, workEmail, company, password });
     } catch (error) {
-      console.error("Failed to create account", error);
-      alert("Failed to create account: " + error.message);
+      // Errors handled by parent (SignUpPage) via toast
+      console.error("Sign up form error:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
+
+  const canSubmit = agree && isPasswordValid && !isLoading;
 
   return (
     <div className="w-full max-w-[500px] mx-auto lg:mx-0">
@@ -91,7 +167,10 @@ export default function SignUpFormCard({ onContinueGoogle, onContinueGithub }) {
                 type={showPw ? "text" : "password"}
                 placeholder="••••••••"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (!pwTouched) setPwTouched(true);
+                }}
                 required
                 className="!mb-0"
               />
@@ -107,6 +186,17 @@ export default function SignUpFormCard({ onContinueGoogle, onContinueGithub }) {
                 </span>
               </button>
             </div>
+
+            {/* Real-time password requirements checklist */}
+            <PasswordRequirements password={password} show={pwTouched} />
+
+            {/* Show a gentle warning if user has typed but password is invalid */}
+            {pwTouched && !isPasswordValid && password.length > 0 && (
+              <p className="text-xs text-amber-500 mt-1 flex items-center gap-1">
+                <span className="material-symbols-outlined text-[14px]">warning</span>
+                Password doesn&apos;t meet all requirements yet
+              </p>
+            )}
           </div>
 
           {/* Terms */}
@@ -135,10 +225,11 @@ export default function SignUpFormCard({ onContinueGoogle, onContinueGithub }) {
             type="submit"
             variant="primary"
             fullWidth
-            isDisabled={!agree}
-            iconRight={<span className="material-symbols-outlined text-[20px]">arrow_forward</span>}
+            isDisabled={!canSubmit}
+            isLoading={isLoading}
+            iconRight={!isLoading && <span className="material-symbols-outlined text-[20px]">arrow_forward</span>}
           >
-            Create Account
+            {isLoading ? "Creating Account…" : "Create Account"}
           </Button>
         </form>
 

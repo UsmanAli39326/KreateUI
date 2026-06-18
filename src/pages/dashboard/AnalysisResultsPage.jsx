@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import DashboardShell from "@/components/Dashboard/DashboardShell";
 import Breadcrumbs from "@/components/Dashboard/BreadCrumbs";
 import Badge from "@/components/Common/Badge";
@@ -7,6 +7,10 @@ import Button from "@/components/Common/Button";
 import { useToast } from "@/components/Common";
 import mockIssue from "@/assets/api/issueDetails.json";
 import auditService from "../../services/auditService";
+
+// Temporary stubs until full refactor
+const WcagBreakdown = ({ score }) => <div className="text-text-3 font-medium">WCAG Score: {score}</div>;
+const IssueListItem = () => null;
 
 function VisualComparison({ visual }) {
     return (
@@ -96,6 +100,7 @@ function CodeBlock({ code }) {
 
 export default function AnalysisResultsPage() {
     const [searchParams] = useSearchParams();
+    const navigate = useNavigate();
     const url = searchParams.get("url") || mockIssue.url;
     const auditId = searchParams.get("auditId");
     const toast = useToast();
@@ -103,6 +108,14 @@ export default function AnalysisResultsPage() {
     
     const [issue, setIssue] = useState({ ...mockIssue, url: url });
     const [isLoading, setIsLoading] = useState(!!auditId);
+
+    // Temporary variables until full refactor
+    const [activeCategory, setActiveCategory] = useState("all");
+    const [activeSeverity, setActiveSeverity] = useState("all");
+    const categories = ["all"];
+    const severities = ["all"];
+    const filteredIssues = [];
+    const handleIssueClick = () => {};
 
     useEffect(() => {
         if (auditId) {
@@ -134,8 +147,7 @@ export default function AnalysisResultsPage() {
     const breadcrumbs = [
         { label: "Workspace", href: "/dashboard" },
         { label: "Analyze", href: "/dashboard/analyze" },
-        { label: "Results", href: selectedIssue ? "/dashboard/analyze/results" : "#", onClick: () => setSelectedIssue(null) },
-        ...(selectedIssue ? [{ label: `Issue #${selectedIssue.id}` }] : []),
+        { label: "Results" }
     ];
 
     const handleCopyFix = () => {
@@ -172,7 +184,17 @@ export default function AnalysisResultsPage() {
 
     return (
         <DashboardShell active="analyze">
-            <Breadcrumbs items={breadcrumbs} />
+            <div className="flex justify-between items-center w-full pb-4">
+                <Breadcrumbs items={breadcrumbs} />
+                {auditId && (
+                    <Button 
+                        variant="secondary" 
+                        onClick={() => navigate(`/dashboard/issues?auditId=${auditId}&url=${encodeURIComponent(url)}`)}
+                    >
+                        View All Issues
+                    </Button>
+                )}
+            </div>
 
             {/* Page Heading */}
             <div className="flex flex-wrap justify-between items-start gap-4 py-6">
@@ -195,7 +217,7 @@ export default function AnalysisResultsPage() {
                 <div className="flex gap-3">
                     <Button
                         variant="secondary"
-                        icon={<span className="material-symbols-outlined text-lg">share</span>}
+                        icon={<span className="material-symbols-outlined text-lg">ios_share</span>}
                     >
                         Export to Jira
                     </Button>
@@ -228,12 +250,12 @@ export default function AnalysisResultsPage() {
                                 <span className="text-sm font-bold text-danger">{issue.technical.measuredRatio}</span>
                             </div>
                             <p className="text-text-3">
-                                Scanned on {new Date(mockResults.scannedAt).toLocaleDateString()} at {new Date(mockResults.scannedAt).toLocaleTimeString()}
+                                Scanned on {new Date(issue.scannedAt || Date.now()).toLocaleDateString()} at {new Date(issue.scannedAt || Date.now()).toLocaleTimeString()}
                             </p>
                         </div>
                         <div className="flex items-center gap-4">
                             <div className="text-right">
-                                <div className="text-3xl font-black text-text-1">{mockResults.overallScore}</div>
+                                <div className="text-3xl font-black text-text-1">{issue.overallScore || 85}</div>
                                 <div className="text-xs text-text-3 font-bold uppercase tracking-wider">Health Score</div>
                             </div>
                             <div className="size-12 rounded-full border-4 border-accent-1 flex items-center justify-center bg-accent-1/10">
@@ -304,7 +326,7 @@ export default function AnalysisResultsPage() {
 
                         {/* Sidebar - WCAG & Actions */}
                         <div className="space-y-6">
-                            <WcagBreakdown score={mockResults.wcagScore} />
+                            <WcagBreakdown score={issue.wcagScore || 90} />
 
                             <div className="bg-surface-1 border border-border-1 rounded-xl p-6">
                                 <h3 className="font-bold text-text-1 mb-4">Export Analysis</h3>

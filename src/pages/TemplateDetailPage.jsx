@@ -4,31 +4,51 @@ import Button from "@/components/Common/Button";
 import marketplaceData from "@/assets/api/marketplaceData.json";
 import marketplaceService from "../services/marketplaceService";
 import { useToast } from "@/components/Common";
-
+import { useAuth } from "@/context/AuthContext";
+import Spinner from "@/components/Common/Spinner";
+import { useEffect } from "react";
 export default function TemplateDetailPage() {
     const { templateId } = useParams();
     const toast = useToast();
-    const { featured, items } = marketplaceData;
+    const { user } = useAuth();
+    const [template, setTemplate] = useState(null);
+    const [loading, setLoading] = useState(true);
     const [isPurchasing, setIsPurchasing] = useState(false);
     const [isDownloading, setIsDownloading] = useState(false);
 
-    // Find the template
-    let template = null;
-    if (featured.id === templateId) {
-        template = featured;
-    } else {
-        template = items.find((item) => item.id === templateId);
-    }
+    useEffect(() => {
+        const fetchTemplate = async () => {
+            try {
+                setLoading(true);
+                const data = await marketplaceService.getTemplateById(templateId);
+                const t = data.data || data;
+                setTemplate({
+                    ...t,
+                    id: t._id || t.id,
+                    image: t.imagePath ? (t.imagePath.startsWith('http') ? t.imagePath : marketplaceService.getStaticFile(t.imagePath)) : t.image,
+                });
+            } catch (err) {
+                console.error("Failed to load template", err);
+                toast.error("Failed to load template details");
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchTemplate();
+    }, [templateId]);
 
     const handleGetTemplate = async () => {
         try {
             setIsPurchasing(true);
             await marketplaceService.purchaseTemplate(templateId);
             toast.success("Template purchased successfully!");
-            // After purchase, we could automatically trigger download or change UI state
         } catch (err) {
             console.error("Purchase failed", err);
-            toast.error("Failed to purchase template");
+            if (err.response?.status === 501 || err.status === 501) {
+                toast.info("Purchase recorded! Payment integration coming soon.");
+            } else {
+                toast.error("Failed to purchase template");
+            }
         } finally {
             setIsPurchasing(false);
         }
@@ -51,6 +71,14 @@ export default function TemplateDetailPage() {
             setIsDownloading(false);
         }
     };
+
+    if (loading) {
+        return (
+            <div className="max-w-7xl mx-auto px-6 py-20 flex justify-center">
+                <Spinner size="lg" />
+            </div>
+        );
+    }
 
     if (!template) {
         return (
@@ -139,10 +167,13 @@ export default function TemplateDetailPage() {
                         </div>
 
                         <div className="space-y-3 mb-8">
-                            <Button variant="primary" fullWidth size="lg" onClick={handleGetTemplate} disabled={isPurchasing}>
+                            {!user && (
+                                <p className="text-sm text-accent-1 text-center font-medium mb-2">Sign in to download or purchase.</p>
+                            )}
+                            <Button variant="primary" fullWidth size="lg" onClick={handleGetTemplate} disabled={!user || isPurchasing}>
                                 {isPurchasing ? "Processing..." : "Get Template"}
                             </Button>
-                            <Button variant="secondary" fullWidth icon={<span className="material-symbols-outlined">download</span>} onClick={handleDownload} disabled={isDownloading}>
+                            <Button variant="secondary" fullWidth icon={<span className="material-symbols-outlined">download</span>} onClick={handleDownload} disabled={!user || isDownloading}>
                                 {isDownloading ? "Downloading..." : "Download Source ZIP"}
                             </Button>
                         </div>

@@ -15,14 +15,16 @@ import ReportsPage from "./pages/dashboard/ReportsPage.jsx";
 import SettingsPage from "./pages/dashboard/SettingsPage.jsx";
 import ProjectsPage from "./pages/dashboard/ProjectsPage.jsx";
 import AdminPage from "./pages/dashboard/AdminPage.jsx";
+import IssuesPage from "./pages/dashboard/IssuesPage.jsx";
 import AboutContent from "./pages/About.jsx";
 import ContactPageContent from "./pages/ContactPage.jsx";
 import MarketplacePage from "./pages/MarketplacePage.jsx";
 import TemplateDetailPage from "./pages/TemplateDetailPage.jsx";
-import PricingPage from "./pages/PricingPage.jsx";
+// import PricingPage from "./pages/PricingPage.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
 import ProtectedRoute from "./components/Common/ProtectedRoute.jsx";
-import { ToastProvider } from "./components/Common";
+import PublicRoute from "./components/AuthPages/PublicRoute.jsx";
+import { ToastProvider, PageLoader } from "./components/Common";
 
 import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage.jsx";
 const SignUpPage = React.lazy(() => import("./pages/auth/SignUpPage.jsx"));
@@ -37,7 +39,7 @@ const router = createBrowserRouter([
       { path: "/contact", element: <ContactPageContent /> },
       { path: "/marketplace", element: <MarketplacePage /> },
       { path: "/marketplace/:templateId", element: <TemplateDetailPage /> },
-      { path: "/pricing", element: <PricingPage /> },
+      // { path: "/pricing", element: <PricingPage /> },
       // Dashboard routes nested under Layout
       // add more app pages here
     ],
@@ -54,6 +56,7 @@ const router = createBrowserRouter([
       { path: "reports", element: <ReportsPage /> },
       { path: "settings", element: <SettingsPage /> },
       { path: "projects", element: <ProjectsPage /> }, // Add ProjectsPage route
+      { path: "issues", element: <IssuesPage /> },
       { path: "admin", element: <AdminPage /> },
     ],
   },
@@ -61,18 +64,28 @@ const router = createBrowserRouter([
   // Routes WITHOUT Layout
   {
     path: "/auth",
-    element: <Login />,
+    element: (
+      <PublicRoute>
+        <Login />
+      </PublicRoute>
+    ),
   },
   {
     path: "/forgot-password",
-    element: <ForgotPasswordPage />,
+    element: (
+      <PublicRoute>
+        <ForgotPasswordPage />
+      </PublicRoute>
+    ),
   },
   {
     path: "/signup",
     element: (
-      <React.Suspense fallback={<div>Loading...</div>}>
-        <SignUpPage />
-      </React.Suspense>
+      <PublicRoute>
+        <React.Suspense fallback={<PageLoader message="Loading..." isFullScreen={true} />}>
+          <SignUpPage />
+        </React.Suspense>
+      </PublicRoute>
     ),
   },
   // {

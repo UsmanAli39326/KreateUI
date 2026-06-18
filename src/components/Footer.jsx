@@ -48,9 +48,10 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-6">
-          <span className="text-white/40 text-sm">
-            © {new Date().getFullYear()} Kreate UI. All rights reserved.
-          </span>
+          <div className="flex flex-col gap-1 text-white/40 text-sm">
+            <span>© {new Date().getFullYear()} Kreate UI. All rights reserved.</span>
+            <span className="text-xs">Developed and powered by <span className="font-medium text-white/60">Devtechnoz</span>.</span>
+          </div>
 
           <div className="flex gap-6 text-white/40">
             <a href="#" className="hover:text-primary transition-colors">

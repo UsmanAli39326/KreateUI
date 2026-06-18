@@ -1,3 +1,8 @@
+/*
+ * PRICING PAGE — commented out, pending final pricing model decision.
+ * TODO: Integrate Stripe when payment is ready (see /api/marketplace/templates/:id/purchase).
+ * Re-enable route in src/main.jsx when ready.
+ */
 import React, { useState } from "react";
 import Button from "@/components/Common/Button";
 

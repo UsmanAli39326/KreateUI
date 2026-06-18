@@ -16,6 +16,9 @@ export default function AboutContent() {
         onJoinTeam={() => console.log("join team")}
         onViewCultureDeck={() => console.log("culture deck")}
       />
+      <div className="w-full bg-background-main py-6 flex justify-center text-text-3 text-sm">
+        Developed and powered by <span className="font-semibold text-text-2 ml-1">Devtechnoz</span>.
+      </div>
     </div>
   );
 }

@@ -80,7 +80,7 @@ async function customFetch(endpoint, options = {}) {
       const refreshToken = getRefreshToken();
       if (!refreshToken) {
         clearTokens();
-        window.location.href = '/login'; // Adjust based on router setup
+        window.location.href = '/auth'; // Adjust based on router setup
         return Promise.reject(data || 'Unauthorized');
       }
 
@@ -104,7 +104,7 @@ async function customFetch(endpoint, options = {}) {
         } catch (refreshErr) {
           isRefreshing = false;
           clearTokens();
-          window.location.href = '/login';
+          window.location.href = '/auth';
           return Promise.reject({ error: 'Session expired. Please log in again.' });
         }
       }
@@ -132,6 +132,7 @@ async function customFetch(endpoint, options = {}) {
       errorMessage = 'Session expired. Please log in again.';
     } else if (response.status === 403) {
       console.error('Access Denied');
+      window.dispatchEvent(new CustomEvent('api:forbidden'));
       errorMessage = 'Access Denied: You do not have permission to perform this action.';
     } else if (response.status === 404) {
       console.error('Resource Not Found');

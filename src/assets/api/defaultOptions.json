@@ -1,5 +1,6 @@
 {
   "wcagAudit": true,
   "mobileResponsiveness": true,
-  "aiHeatmaps": false
+  "aiHeatmaps": false,
+  "aiRecommendations": true
 }

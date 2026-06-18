@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import DashboardShell from "@/components/Dashboard/DashboardShell";
 import Breadcrumbs from "@/components/Dashboard/BreadCrumbs";
 import StatsCard from "@/components/Dashboard/StatsCard";
@@ -6,12 +7,13 @@ import ScanVelocityChart from "@/components/Dashboard/ScanVelocityChart";
 import CriticalIssues from "@/components/Dashboard/CriticalIssues";
 import ProjectsTable from "@/components/Dashboard/ProjectsTable";
 import Button from "@/components/Common/Button";
+import Skeleton from "@/components/Common/Skeleton";
+import { useToast } from "@/components/Common";
+import userService from "../../services/userService";
 
 // Mock data imports
-import overviewStats from "@/assets/api/overviewStats.json";
-import scanVelocity from "@/assets/api/scanVelocity.json";
+// TODO: replace with real API
 import criticalIssues from "@/assets/api/criticalIssues.json";
-import recentProjects from "@/assets/api/recentProjects.json";
 
 function SearchIcon() {
     return (
@@ -41,14 +43,53 @@ function BellIcon() {
 }
 
 export default function OverviewPage() {
+    const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState("");
+    const [stats, setStats] = useState(null);
+    const [scanHistory, setScanHistory] = useState(null);
+    const [projects, setProjects] = useState([]);
+
+    const [isLoading, setIsLoading] = useState(true);
+    const toast = useToast();
+
+    useEffect(() => {
+        setIsLoading(true);
+        Promise.all([
+            userService.getStats(),
+            userService.getScanHistory(30),
+            userService.getAudits(1, 5)
+        ])
+            .then(([statsRes, historyRes, auditsRes]) => {
+                setStats(statsRes?.data || statsRes);
+                setScanHistory(historyRes?.data || historyRes);
+
+                const audits = auditsRes?.data?.audits || auditsRes?.audits || [];
+                const mapped = audits.map(a => ({
+                    id: a.id || a._id || Math.random().toString(),
+                    name: a.name || a.targetUrl || "Unknown Project",
+                    icon: a.icon || "globe",
+                    score: a.score || a.performanceScore || 0,
+                    issuesCount: a.summary?.issueCount || a.issuesCount || 0,
+                    lastScanned: a.createdAt ? new Date(a.createdAt).toLocaleDateString() : (a.lastScanned || "Unknown"),
+                    status: a.status || "healthy"
+                }));
+                setProjects(mapped);
+            })
+            .catch((err) => {
+                console.error("Dashboard data load error:", err);
+                toast.error("Failed to load dashboard data", "Error");
+            })
+            .finally(() => {
+                setIsLoading(false);
+            });
+    }, []);
 
     const breadcrumbs = useMemo(
         () => [{ label: "Workspace", href: "/dashboard" }, { label: "Overview" }],
         []
     );
 
-    const projectCount = recentProjects.length;
+    const projectCount = projects.length;
 
     return (
         <DashboardShell active="dashboard">
@@ -86,6 +127,7 @@ export default function OverviewPage() {
                         size="md"
                         icon={<PlusIcon />}
                         className="shadow-lg shadow-[#8e52ff]/20"
+                        onClick={() => navigate('/dashboard/analyze')}
                     >
                         New Scan
                     </Button>
@@ -98,61 +140,84 @@ export default function OverviewPage() {
             </header>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                {/* Accessibility Score */}
-                <StatsCard
-                    title="Avg. Accessibility Score"
-                    value={`${overviewStats.accessibilityScore.value}%`}
-                    trend={overviewStats.accessibilityScore.trend}
-                    trendDirection={overviewStats.accessibilityScore.trendDirection}
-                    subtitle={`Last calculated ${overviewStats.accessibilityScore.lastUpdated}`}
-                    icon="analytics"
-                    iconColor="text-[#8e52ff]"
-                    showGlow
-                />
+            {isLoading ? (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    {[1, 2, 3].map(i => (
+                        <Skeleton key={i} className="h-24 rounded-xl" />
+                    ))}
+                </div>
+            ) : stats && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    {/* Accessibility Score */}
+                    <StatsCard
+                        title="Avg. Accessibility Score"
+                        value={`${stats.accessibilityScore?.value ?? stats.accessibilityScore ?? 0}%`}
+                        trend={stats.accessibilityScore?.trend}
+                        trendDirection={stats.accessibilityScore?.trendDirection}
+                        subtitle={`Last calculated ${stats.accessibilityScore?.lastUpdated || 'recently'}`}
+                        icon="analytics"
+                        iconColor="text-[#8e52ff]"
+                        showGlow
+                    />
 
-                {/* Total Issues */}
-                <StatsCard
-                    title="Total Issues Across Sites"
-                    value={overviewStats.totalIssues.value.toLocaleString()}
-                    trend={overviewStats.totalIssues.trend}
-                    trendDirection={overviewStats.totalIssues.trendDirection}
-                    icon="warning"
-                    iconColor="text-orange-500"
-                >
-                    {/* Issues breakdown bars */}
-                    <div className="absolute bottom-6 left-6 right-6">
-                        <div className="mt-4 flex gap-1">
-                            <div className="h-1 flex-1 bg-red-500 rounded-full" />
-                            <div className="h-1 flex-1 bg-orange-500 rounded-full" />
-                            <div className="h-1 flex-1 bg-yellow-500 rounded-full" />
-                            <div className="h-1 flex-1 bg-border-1 rounded-full" />
+                    {/* Total Issues */}
+                    <StatsCard
+                        title="Total Issues Across Sites"
+                        value={(stats.totalIssues?.value ?? stats.totalIssues ?? 0).toLocaleString()}
+                        trend={stats.totalIssues?.trend}
+                        trendDirection={stats.totalIssues?.trendDirection}
+                        icon="warning"
+                        iconColor="text-orange-500"
+                    >
+                        {/* Issues breakdown bars */}
+                        <div className="absolute bottom-6 left-6 right-6">
+                            <div className="mt-4 flex gap-1">
+                                <div className="h-1 flex-1 bg-red-500 rounded-full" />
+                                <div className="h-1 flex-1 bg-orange-500 rounded-full" />
+                                <div className="h-1 flex-1 bg-yellow-500 rounded-full" />
+                                <div className="h-1 flex-1 bg-border-1 rounded-full" />
+                            </div>
                         </div>
-                    </div>
-                </StatsCard>
+                    </StatsCard>
 
-                {/* Pending Recommendations */}
-                <StatsCard
-                    title="Pending Recommendations"
-                    value={overviewStats.pendingRecommendations.value}
-                    icon="lightbulb"
-                    iconColor="text-blue-400"
-                    subtitle={`${overviewStats.pendingRecommendations.criticalFixes} Critical fixes auto-generated`}
-                >
-                    <span className="bg-blue-400/10 text-blue-400 text-[10px] font-bold px-1.5 py-0.5 rounded border border-blue-400/20 uppercase tracking-tight ml-2">
-                        {overviewStats.pendingRecommendations.badge}
-                    </span>
-                </StatsCard>
-            </div>
+                    {/* Pending Recommendations */}
+                    <StatsCard
+                        title="Pending Recommendations"
+                        value={stats.totalIssues?.value ?? stats.totalIssues ?? 0}
+                        icon="lightbulb"
+                        iconColor="text-blue-400"
+                        subtitle={`${stats.pendingRecommendations?.criticalFixes || 0} Critical fixes auto-generated`}
+                    >
+                        {stats.pendingRecommendations?.badge && (
+                            <span className="bg-blue-400/10 text-blue-400 text-[10px] font-bold px-1.5 py-0.5 rounded border border-blue-400/20 uppercase tracking-tight ml-2">
+                                {stats.pendingRecommendations.badge}
+                            </span>
+                        )}
+                    </StatsCard>
+                </div>
+            )}
 
             {/* Chart + Issues Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <ScanVelocityChart data={scanVelocity} />
+                {isLoading ? (
+                    <div className="lg:col-span-2">
+                        <Skeleton className="h-[350px] rounded-xl" />
+                    </div>
+                ) : scanHistory && (
+                    <ScanVelocityChart data={scanHistory} />
+                )}
+                
                 <CriticalIssues issues={criticalIssues} />
             </div>
 
             {/* Projects Table */}
-            <ProjectsTable projects={recentProjects} />
+            {isLoading ? (
+                <div className="mt-8">
+                    <Skeleton className="h-64 rounded-xl" />
+                </div>
+            ) : projects && (
+                <ProjectsTable projects={projects} />
+            )}
         </DashboardShell>
     );
 }
