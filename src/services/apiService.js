@@ -77,6 +77,12 @@ async function customFetch(endpoint, options = {}) {
 
     // Handle 401 Unauthorized (Token Expiry)
     if (response.status === 401) {
+      if (options._retry) {
+        clearTokens();
+        window.location.href = '/login';
+        return Promise.reject(data || 'Unauthorized');
+      }
+
       const refreshToken = getRefreshToken();
       if (!refreshToken) {
         clearTokens();
@@ -113,7 +119,7 @@ async function customFetch(endpoint, options = {}) {
       return new Promise((resolve) => {
         subscribeTokenRefresh((newToken) => {
           config.headers.Authorization = `Bearer ${newToken}`;
-          resolve(customFetch(endpoint, { ...options, headers: config.headers }));
+          resolve(customFetch(endpoint, { ...options, _retry: true, headers: config.headers }));
         });
       });
     }

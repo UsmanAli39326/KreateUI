@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import DashboardShell from "@/components/Dashboard/DashboardShell";
 import Breadcrumbs from "@/components/Dashboard/BreadCrumbs";
@@ -74,6 +74,7 @@ export default function AnalyzeInProgressPage() {
     const toast = useToast();
 
     const [currentStep, setCurrentStep] = useState(0);
+    const currentStepRef = useRef(0); // mirror of currentStep for use inside interval
     const [progress, setProgress] = useState(0);
     const [isComplete, setIsComplete] = useState(false);
     const [auditId, setAuditId] = useState(null);
@@ -115,13 +116,16 @@ export default function AnalyzeInProgressPage() {
         runAudit(url);
     };
 
-    // Simulate analysis progress (syncs with real API waiting or at least minimum time)
+    // Simulate analysis progress — single stable interval for the full animation.
+    // currentStepRef lets us read the latest step inside the callback without
+    // adding currentStep to the dependency array (which would tear down and
+    // re-create the interval on every step, causing glitches).
     useEffect(() => {
         if (auditError) return;
 
         const stepDuration = 2000; // 2 seconds per step
-        const progressInterval = 50; // Update progress every 50ms
-        const progressIncrement = 100 / (stepDuration / progressInterval);
+        const tickInterval = 50;   // UI update frequency (ms)
+        const progressIncrement = 100 / (stepDuration / tickInterval);
 
         let stepProgress = 0;
 
@@ -130,24 +134,24 @@ export default function AnalyzeInProgressPage() {
 
             if (stepProgress >= 100) {
                 stepProgress = 0;
-                setCurrentStep((prev) => {
-                    const next = prev + 1;
-                    if (next >= analysisSteps.length) {
-                        clearInterval(timer);
-                        setIsComplete(true);
-                        return prev;
-                    }
-                    return next;
-                });
+                const next = currentStepRef.current + 1;
+                if (next >= analysisSteps.length) {
+                    clearInterval(timer);
+                    setIsComplete(true);
+                    return;
+                }
+                currentStepRef.current = next;
+                setCurrentStep(next);
             }
 
-            // Calculate overall progress
-            const overallProgress = ((currentStep * 100) + stepProgress) / analysisSteps.length;
+            // Calculate overall progress from the ref (always current, no stale closure)
+            const overallProgress =
+                ((currentStepRef.current * 100) + stepProgress) / analysisSteps.length;
             setProgress(Math.min(overallProgress, 100));
-        }, progressInterval);
+        }, tickInterval);
 
         return () => clearInterval(timer);
-    }, [currentStep, auditError]);
+    }, [auditError]); // interval is created once; re-created only if an error occurs
 
     return (
         <DashboardShell active="analyze">

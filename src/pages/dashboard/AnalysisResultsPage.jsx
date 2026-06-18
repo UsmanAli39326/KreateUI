@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import DashboardShell from "@/components/Dashboard/DashboardShell";
 import Breadcrumbs from "@/components/Dashboard/BreadCrumbs";
@@ -6,7 +6,10 @@ import Badge from "@/components/Common/Badge";
 import Button from "@/components/Common/Button";
 import { useToast } from "@/components/Common";
 import mockIssue from "@/assets/api/issueDetails.json";
+import mockResults from "@/assets/api/mockAnalysisResults.json";
 import auditService from "../../services/auditService";
+import IssueListItem from "@/components/Dashboard/Analysis/IssueListItem";
+import WcagBreakdown from "@/components/Dashboard/Analysis/WcagBreakdown";
 
 function VisualComparison({ visual }) {
     return (
@@ -103,6 +106,27 @@ export default function AnalysisResultsPage() {
     
     const [issue, setIssue] = useState({ ...mockIssue, url: url });
     const [isLoading, setIsLoading] = useState(!!auditId);
+
+    const [selectedIssue, setSelectedIssue] = useState(null);
+    const [activeCategory, setActiveCategory] = useState("all");
+    const [activeSeverity, setActiveSeverity] = useState("all");
+
+    const categories = ["all", "accessibility", "usability", "performance", "security"];
+    const severities = ["all", "critical", "high", "medium", "low"];
+
+    const filteredIssues = useMemo(() => {
+        return mockResults.issues.filter(i => {
+            if (activeCategory !== "all" && i.category !== activeCategory) return false;
+            if (activeSeverity !== "all" && i.severity !== activeSeverity) return false;
+            return true;
+        });
+    }, [activeCategory, activeSeverity]);
+
+    const handleIssueClick = (clickedIssue) => {
+        setSelectedIssue(clickedIssue);
+        setIssue({ ...clickedIssue, url: url });
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    };
 
     useEffect(() => {
         if (auditId) {
