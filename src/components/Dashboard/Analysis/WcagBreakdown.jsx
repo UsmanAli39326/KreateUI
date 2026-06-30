@@ -1,6 +1,6 @@
 import React from "react";
 
-export default function WcagBreakdown({ score }) {
+export default function WcagBreakdown({ score, onDownloadReport }) {
     const getGradeColor = (grade) => {
         if (grade >= 90) return "text-success";
         if (grade >= 70) return "text-warning";
@@ -40,7 +40,10 @@ export default function WcagBreakdown({ score }) {
             </div>
 
             <div className="mt-6 pt-6 border-t border-border-1">
-                <button className="flex items-center gap-2 text-xs text-accent-1 font-bold hover:underline w-full justify-center">
+                <button 
+                    className="flex items-center gap-2 text-xs text-accent-1 font-bold hover:underline w-full justify-center"
+                    onClick={onDownloadReport}
+                >
                     <span className="material-symbols-outlined text-sm">download</span>
                     Download Compliance Report
                 </button>

@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import DashboardShell from "@/components/Dashboard/DashboardShell";
 import Button from "@/components/Common/Button";
 import { useToast } from "@/components/Common";
-import reportData from "@/assets/api/reportData.json";
 import userService from "../../services/userService";
 import auditService from "../../services/auditService";
 
@@ -47,8 +46,13 @@ function StatusBadge({ status }) {
 export default function ReportsPage() {
     const toast = useToast();
     const navigate = useNavigate();
-    const [stats, setStats] = useState(reportData.stats);
-    const [audit, setAudit] = useState(reportData.audit);
+    const [stats, setStats] = useState({
+        overall: { score: 0, trend: 0 },
+        levelA: { score: 0 },
+        levelAA: { score: 0 },
+        levelAAA: { score: 0 }
+    });
+    const [audit, setAudit] = useState([]);
     const [loading, setLoading] = useState(true);
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
@@ -72,27 +76,18 @@ export default function ReportsPage() {
     const loadAudits = async (currentPage = 1) => {
         try {
             setLoading(true);
-            const res = await userService.getAudits(currentPage, 10);
-            // API returns: { audits: [...], total, page, limit }
-            const auditList = res?.audits || res?.data;
-            if (res?.total) {
-                setTotalPages(Math.ceil(res.total / (res.limit || 10)));
-            }
-            if (auditList && auditList.length > 0) {
-                const mappedAudits = auditList.map(a => ({
-                    id: a.id,
-                    criterion: a.name,
-                    level: "AA",
-                    status: a.score >= 80 ? "Pass" : "Fail",
-                    impact: a.score < 50 ? "Critical" : a.score < 80 ? "Moderate" : "Minor",
-                    description: `${a.summary?.issueCount || 0} issues found`
-                }));
-                setAudit(mappedAudits);
+            const res = await userService.getComplianceReport();
+            const criteriaList = res?.data || res || [];
+            
+            setTotalPages(1); // Usually a compliance report is a single list of criteria
+            
+            if (criteriaList && criteriaList.length > 0) {
+                setAudit(criteriaList);
             } else {
                 setAudit([]);
             }
         } catch (err) {
-            console.error("Failed to load audits", err);
+            console.error("Failed to load compliance report", err);
             toast.error("Failed to load compliance audit history from server.", "Load Error");
         } finally {
             setLoading(false);

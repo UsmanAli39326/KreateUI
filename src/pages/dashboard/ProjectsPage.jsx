@@ -98,12 +98,12 @@ export default function ProjectsPage() {
           const mappedList = auditList.map(a => ({
             ...a,
             id: a.id || a._id || Math.random().toString(),
-            name: a.name || "—",
+            name: a.name || a.url || a.targetUrl || "Unknown Project",
             url: a.url || a.targetUrl || "—",
             status: a.status || "healthy",
-            score: a.score || 0,
+            score: a.score || a.summary?.currentScore || 0,
             issuesCount: a.summary?.issueCount || a.issuesCount || 0,
-            framework: a.framework || "—",
+            framework: a.framework || "HTML/React",
             lastScanned: a.createdAt ? new Date(a.createdAt).toLocaleDateString() : (a.lastScanned || "—"),
             icon: a.icon || "web",
           }));

@@ -37,12 +37,12 @@ export default function IssuesPage() {
 
     const filteredIssues = useMemo(() => {
         return issues.filter(issue => {
-            // Hardcode severity as Moderate for now, so severity filter mostly checks Moderate
-            const issueSeverity = "Moderate";
+            const issueSeverity = issue.severity || "Moderate";
             const matchSeverity = severityFilter === 'all' || issueSeverity.toLowerCase() === severityFilter.toLowerCase();
             
-            // Category filter
-            const matchCategory = categoryFilter === 'all' || (issue.title && issue.title.toLowerCase().includes(categoryFilter.toLowerCase()));
+            // Category filter based on type
+            const issueCategory = issue.type || "";
+            const matchCategory = categoryFilter === 'all' || issueCategory.toLowerCase().includes(categoryFilter.toLowerCase()) || (issue.title && issue.title.toLowerCase().includes(categoryFilter.toLowerCase()));
             
             return matchSeverity && matchCategory;
         });
@@ -128,9 +128,8 @@ export default function IssuesPage() {
                                 <div key={idx} className="bg-surface-1 rounded-xl border border-border-1 p-6 flex flex-col sm:flex-row gap-6 items-start sm:items-center justify-between hover:border-border-2 transition-colors">
                                     <div className="flex flex-col gap-3 flex-1">
                                         <div className="flex items-center gap-3">
-                                            {/* TODO: since the API doesn't return severity, label them all "Moderate" for now */}
-                                            <Badge variant="warning" size="sm" className="uppercase tracking-wider">
-                                                Moderate
+                                            <Badge variant={rec.severity?.toLowerCase() === 'critical' ? 'critical' : rec.severity?.toLowerCase() === 'serious' ? 'danger' : rec.severity?.toLowerCase() === 'minor' ? 'success' : 'warning'} size="sm" className="uppercase tracking-wider">
+                                                {rec.severity || "Moderate"}
                                             </Badge>
                                             <h3 className="text-lg font-bold text-text-1 m-0">
                                                 {rec.title || "Untitled Issue"}

@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import Button from "@/components/Common/Button";
-import marketplaceData from "@/assets/api/marketplaceData.json";
 import marketplaceService from "../services/marketplaceService";
 import { useToast } from "@/components/Common";
 import { useAuth } from "@/context/AuthContext";

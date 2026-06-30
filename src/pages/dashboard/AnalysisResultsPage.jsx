@@ -1,25 +1,14 @@
-<<<<<<< HEAD
-import React, { useState, useEffect, useMemo } from "react";
-import { useSearchParams } from "react-router-dom";
-=======
 import React, { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
->>>>>>> 9288ec54f038862c9eab407302699ab8cd46c8ee
 import DashboardShell from "@/components/Dashboard/DashboardShell";
 import Breadcrumbs from "@/components/Dashboard/BreadCrumbs";
 import Badge from "@/components/Common/Badge";
 import Button from "@/components/Common/Button";
 import { useToast } from "@/components/Common";
 import mockIssue from "@/assets/api/issueDetails.json";
-import mockResults from "@/assets/api/mockAnalysisResults.json";
 import auditService from "../../services/auditService";
 import IssueListItem from "@/components/Dashboard/Analysis/IssueListItem";
 import WcagBreakdown from "@/components/Dashboard/Analysis/WcagBreakdown";
-
-// Temporary stubs until full refactor
-const WcagBreakdown = ({ score }) => <div className="text-text-3 font-medium">WCAG Score: {score}</div>;
-const IssueListItem = () => null;
-
 function VisualComparison({ visual }) {
     return (
         <div className="bg-surface-1 rounded-xl border border-border-1 overflow-hidden">
@@ -113,65 +102,52 @@ export default function AnalysisResultsPage() {
     const auditId = searchParams.get("auditId");
     const toast = useToast();
     const [showToast, setShowToast] = useState(false);
-    
+
     const [issue, setIssue] = useState({ ...mockIssue, url: url });
+    const [auditSummary, setAuditSummary] = useState(null);
     const [isLoading, setIsLoading] = useState(!!auditId);
 
-<<<<<<< HEAD
-    const [selectedIssue, setSelectedIssue] = useState(null);
+    const [issuesList, setIssuesList] = useState([]);
     const [activeCategory, setActiveCategory] = useState("all");
     const [activeSeverity, setActiveSeverity] = useState("all");
 
-    const categories = ["all", "accessibility", "usability", "performance", "security"];
-    const severities = ["all", "critical", "high", "medium", "low"];
+    const categories = ["all", ...new Set(issuesList.map(i => i.type || i.category).filter(Boolean))];
+    const severities = ["all", ...new Set(issuesList.map(i => i.severity).filter(Boolean))];
 
-    const filteredIssues = useMemo(() => {
-        return mockResults.issues.filter(i => {
-            if (activeCategory !== "all" && i.category !== activeCategory) return false;
-            if (activeSeverity !== "all" && i.severity !== activeSeverity) return false;
-            return true;
-        });
-    }, [activeCategory, activeSeverity]);
+    const filteredIssues = issuesList.filter(i => {
+        const catMatch = activeCategory === "all" || (i.type || i.category) === activeCategory;
+        const sevMatch = activeSeverity === "all" || i.severity === activeSeverity;
+        return catMatch && sevMatch;
+    });
 
     const handleIssueClick = (clickedIssue) => {
-        setSelectedIssue(clickedIssue);
-        setIssue({ ...clickedIssue, url: url });
-        window.scrollTo({ top: 0, behavior: "smooth" });
+        setIssue(clickedIssue);
     };
-=======
-    // Temporary variables until full refactor
-    const [activeCategory, setActiveCategory] = useState("all");
-    const [activeSeverity, setActiveSeverity] = useState("all");
-    const categories = ["all"];
-    const severities = ["all"];
-    const filteredIssues = [];
-    const handleIssueClick = () => {};
->>>>>>> 9288ec54f038862c9eab407302699ab8cd46c8ee
 
     useEffect(() => {
         if (auditId) {
-            auditService.getRecommendations(auditId)
-                .then(res => {
-                    // API returns: { auditId, recommendations: [...] }
-                    const recs = res?.recommendations || res?.data;
-                    if (recs && recs.length > 0) {
-                        const rec = recs[0];
-                        // In a real app we'd map API fields to UI fields.
-                        // For now we just merge what we can over the mock issue.
-                        setIssue(prev => ({
-                            ...prev,
-                            title: rec.title || prev.title,
-                            description: rec.description || prev.description,
-                            recommendation: rec.suggestion || prev.recommendation,
-                            id: rec.ruleId || prev.id
-                        }));
-                    }
-                })
-                .catch(err => {
-                    console.error("Failed to fetch recommendations", err);
-                    toast.error("Failed to load recommendations from server.", "Error");
-                })
-                .finally(() => setIsLoading(false));
+            Promise.all([
+                auditService.getRecommendations(auditId),
+                auditService.getAudit(auditId)
+            ])
+            .then(([recRes, auditRes]) => {
+                const recs = recRes?.recommendations || recRes?.data?.recommendations || recRes?.data || [];
+                if (recs && recs.length > 0) {
+                    setIssuesList(recs);
+                    setIssue(recs[0]); // Select first issue by default
+                } else {
+                    setIssuesList([]);
+                }
+                
+                if (auditRes?.summary) {
+                    setAuditSummary(auditRes.summary);
+                }
+            })
+            .catch(err => {
+                console.error("Failed to fetch data", err);
+                toast.error("Failed to load audit data from server.", "Error");
+            })
+            .finally(() => setIsLoading(false));
         }
     }, [auditId]);
 
@@ -182,10 +158,29 @@ export default function AnalysisResultsPage() {
     ];
 
     const handleCopyFix = () => {
-        navigator.clipboard.writeText(issue.code.preview.map(l => l.content).join('\n'));
+        const textToCopy = issue.code ? issue.code.preview.map(l => l.content).join('\n') : (issue.suggestion || issue.element || "");
+        navigator.clipboard.writeText(textToCopy);
         toast.success("Fix snippet copied to clipboard!", "Copied");
         setShowToast(true);
         setTimeout(() => setShowToast(false), 3000);
+    };
+
+    const renderCodeBlock = () => {
+        let fallbackSnippet = issue.suggestion || "No code snippet available.";
+        if (issue.element && issue.element !== "page") {
+            let tag = `<${issue.element.toLowerCase()}`;
+            if (issue.id) tag += ` id="${issue.id}"`;
+            if (issue.className) tag += ` class="${issue.className}"`;
+            tag += `>`;
+            if (issue.text) tag += `\n  ${issue.text}\n</${issue.element.toLowerCase()}>`;
+            fallbackSnippet = tag;
+        }
+
+        const codeData = issue.code || {
+            file: "Source HTML",
+            preview: fallbackSnippet.split('\n').map((line, idx) => ({ line: idx + 1, content: line }))
+        };
+        return <CodeBlock code={{ ...codeData, onApplyFix: handleApplyFix }} />;
     };
 
     const handleApplyFix = async () => {
@@ -194,7 +189,7 @@ export default function AnalysisResultsPage() {
             return;
         }
         try {
-            await auditService.acceptSuggestion(auditId, issue.id);
+            await auditService.acceptSuggestion(auditId, issue.ruleId);
             toast.success("AI suggestion applied successfully to the source code!", "Success");
         } catch (err) {
             console.error(err);
@@ -205,7 +200,7 @@ export default function AnalysisResultsPage() {
     const handleRejectFix = async () => {
         if (!auditId) return;
         try {
-            await auditService.rejectSuggestion(auditId, issue.id);
+            await auditService.rejectSuggestion(auditId, issue.ruleId);
             toast.info("Suggestion rejected.", "Info");
         } catch (err) {
             console.error(err);
@@ -213,13 +208,53 @@ export default function AnalysisResultsPage() {
         }
     };
 
+    const handleDownloadPdf = async () => {
+        if (!auditId) return;
+        try {
+            toast.info("Generating PDF report...", "Processing");
+            const blob = await auditService.getPdfReport(auditId);
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `audit-report-${auditId}.pdf`;
+            a.click();
+            URL.revokeObjectURL(url);
+            toast.success("PDF report downloaded successfully.", "Success");
+        } catch (err) {
+            console.error(err);
+            toast.error("Failed to download PDF report.", "Error");
+        }
+    };
+
+    const handleDownloadHtml = async () => {
+        if (!auditId) return;
+        try {
+            toast.info("Generating HTML report...", "Processing");
+            const blob = await auditService.getHtmlReport(auditId);
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `audit-report-${auditId}.html`;
+            a.click();
+            URL.revokeObjectURL(url);
+            toast.success("HTML report downloaded successfully.", "Success");
+        } catch (err) {
+            console.error(err);
+            toast.error("Failed to download HTML report.", "Error");
+        }
+    };
+
+    const handleExportJira = () => {
+        toast.info("Jira integration is coming soon!", "Feature Preview");
+    };
+
     return (
         <DashboardShell active="analyze">
             <div className="flex justify-between items-center w-full pb-4">
                 <Breadcrumbs items={breadcrumbs} />
                 {auditId && (
-                    <Button 
-                        variant="secondary" 
+                    <Button
+                        variant="secondary"
                         onClick={() => navigate(`/dashboard/issues?auditId=${auditId}&url=${encodeURIComponent(url)}`)}
                     >
                         View All Issues
@@ -235,20 +270,21 @@ export default function AnalysisResultsPage() {
                             {issue.severity}
                         </Badge>
                         <span className="text-text-3 text-xs font-medium uppercase tracking-wider">
-                            Detected: {issue.detectedAt}
+                            Detected: {issue.detectedAt || new Date(issue.scannedAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' ' + new Date(issue.scannedAt || Date.now()).toLocaleDateString()}
                         </span>
                     </div>
                     <h1 className="text-text-1 text-3xl font-black leading-tight tracking-tight">
                         {issue.title}
                     </h1>
                     <p className="text-text-3 text-base font-normal">
-                        {issue.description}
+                        {issue.description || issue.suggestion || "No detailed description available."}
                     </p>
                 </div>
                 <div className="flex gap-3">
                     <Button
                         variant="secondary"
                         icon={<span className="material-symbols-outlined text-lg">ios_share</span>}
+                        onClick={handleExportJira}
                     >
                         Export to Jira
                     </Button>
@@ -264,10 +300,68 @@ export default function AnalysisResultsPage() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 pb-10">
-                {/* Left Column: Visual & Code */}
+                {/* Left Column: Visual & Code & Issues */}
                 <div className="lg:col-span-8 flex flex-col gap-6">
-                    <VisualComparison visual={issue.visual} />
-                    <CodeBlock code={{ ...issue.code, onApplyFix: handleApplyFix }} />
+                    {issue.visual && <VisualComparison visual={issue.visual} />}
+                    {renderCodeBlock()}
+
+                    {/* Main Content - Issues List */}
+                    <div className="space-y-6 pt-6 mt-2 border-t border-border-1/50">
+                        {/* Filters */}
+                        <div className="flex flex-wrap items-center gap-3 pb-4">
+                            <span className="text-sm font-bold text-text-2 mr-2">Filter by:</span>
+
+                            <select
+                                className="bg-surface-1 border border-border-1 rounded-md px-3 py-1.5 text-sm text-text-1 outline-none focus:ring-2 focus:ring-accent-1/50"
+                                value={activeCategory}
+                                onChange={(e) => setActiveCategory(e.target.value)}
+                            >
+                                {categories.map(cat => (
+                                    <option key={cat} value={cat} className="capitalize">{cat === 'all' ? 'All Categories' : cat}</option>
+                                ))}
+                            </select>
+
+                            <select
+                                className="bg-surface-1 border border-border-1 rounded-md px-3 py-1.5 text-sm text-text-1 outline-none focus:ring-2 focus:ring-accent-1/50"
+                                value={activeSeverity}
+                                onChange={(e) => setActiveSeverity(e.target.value)}
+                            >
+                                {severities.map(sev => (
+                                    <option key={sev} value={sev} className="capitalize">{sev === 'all' ? 'All Severities' : sev}</option>
+                                ))}
+                            </select>
+
+                            {(activeCategory !== "all" || activeSeverity !== "all") && (
+                                <button
+                                    onClick={() => { setActiveCategory("all"); setActiveSeverity("all"); }}
+                                    className="text-xs text-accent-1 font-medium hover:underline ml-auto"
+                                >
+                                    Clear Filters
+                                </button>
+                            )}
+                        </div>
+
+                        {/* List */}
+                        <div className="space-y-4">
+                            {filteredIssues.length > 0 ? (
+                                filteredIssues.map(issue => (
+                                    <IssueListItem
+                                        key={issue.id}
+                                        issue={issue}
+                                        onClick={() => handleIssueClick(issue)}
+                                    />
+                                ))
+                            ) : (
+                                <div className="p-12 text-center bg-surface-1 border border-border-1 rounded-xl border-dashed">
+                                    <div className="size-16 bg-bg-0 text-text-3 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <span className="material-symbols-outlined text-2xl">check_circle</span>
+                                    </div>
+                                    <h3 className="text-lg font-bold text-text-1">No issues found</h3>
+                                    <p className="text-text-3">Try adjusting your filters or run a new scan.</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
                 </div>
 
                 {/* Right Column: Details & Docs */}
@@ -278,101 +372,49 @@ export default function AnalysisResultsPage() {
                         <div className="space-y-4">
                             <div className="flex justify-between items-center py-2 border-b border-border-1">
                                 <span className="text-sm text-text-3">Measured Ratio</span>
-                                <span className="text-sm font-bold text-danger">{issue.technical.measuredRatio}</span>
+                                <span className="text-sm font-bold text-danger">{issue.technical?.measuredRatio || "N/A"}</span>
                             </div>
                             <p className="text-text-3">
                                 Scanned on {new Date(issue.scannedAt || Date.now()).toLocaleDateString()} at {new Date(issue.scannedAt || Date.now()).toLocaleTimeString()}
                             </p>
                         </div>
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-4 mt-6">
                             <div className="text-right">
-                                <div className="text-3xl font-black text-text-1">{issue.overallScore || 85}</div>
+                                <div className="text-3xl font-black text-text-1">{auditSummary?.currentScore ?? issue.overallScore ?? 85}</div>
                                 <div className="text-xs text-text-3 font-bold uppercase tracking-wider">Health Score</div>
                             </div>
-                            <div className="size-12 rounded-full border-4 border-accent-1 flex items-center justify-center bg-accent-1/10">
+                            <div className="size-12 rounded-full border-4 border-accent-1 flex items-center justify-center bg-accent-1/10 ml-auto">
                                 <span className="material-symbols-outlined text-accent-1">health_and_safety</span>
                             </div>
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        {/* Main Content - Issues List */}
-                        <div className="lg:col-span-2 space-y-6">
+                    <WcagBreakdown 
+                        score={{
+                            level: "AA",
+                            total: auditSummary?.compliancePercentage ?? issue.wcagScore ?? 90,
+                            breakdown: { 
+                                perceivable: auditSummary?.compliancePercentage ?? 90, 
+                                operable: auditSummary?.compliancePercentage ? Math.max(0, auditSummary.compliancePercentage - 5) : 85, 
+                                understandable: auditSummary?.compliancePercentage ? Math.min(100, auditSummary.compliancePercentage + 5) : 95, 
+                                robust: 100 
+                            }
+                        }} 
+                        onDownloadReport={handleDownloadPdf}
+                    />
 
-                            {/* Filters */}
-                            <div className="flex flex-wrap items-center gap-3 pb-4">
-                                <span className="text-sm font-bold text-text-2 mr-2">Filter by:</span>
-
-                                <select
-                                    className="bg-surface-1 border border-border-1 rounded-md px-3 py-1.5 text-sm text-text-1 outline-none focus:ring-2 focus:ring-accent-1/50"
-                                    value={activeCategory}
-                                    onChange={(e) => setActiveCategory(e.target.value)}
-                                >
-                                    {categories.map(cat => (
-                                        <option key={cat} value={cat} className="capitalize">{cat === 'all' ? 'All Categories' : cat}</option>
-                                    ))}
-                                </select>
-
-                                <select
-                                    className="bg-surface-1 border border-border-1 rounded-md px-3 py-1.5 text-sm text-text-1 outline-none focus:ring-2 focus:ring-accent-1/50"
-                                    value={activeSeverity}
-                                    onChange={(e) => setActiveSeverity(e.target.value)}
-                                >
-                                    {severities.map(sev => (
-                                        <option key={sev} value={sev} className="capitalize">{sev === 'all' ? 'All Severities' : sev}</option>
-                                    ))}
-                                </select>
-
-                                {(activeCategory !== "all" || activeSeverity !== "all") && (
-                                    <button
-                                        onClick={() => { setActiveCategory("all"); setActiveSeverity("all"); }}
-                                        className="text-xs text-accent-1 font-medium hover:underline ml-auto"
-                                    >
-                                        Clear Filters
-                                    </button>
-                                )}
-                            </div>
-
-                            {/* List */}
-                            <div className="space-y-4">
-                                {filteredIssues.length > 0 ? (
-                                    filteredIssues.map(issue => (
-                                        <IssueListItem
-                                            key={issue.id}
-                                            issue={issue}
-                                            onClick={() => handleIssueClick(issue)}
-                                        />
-                                    ))
-                                ) : (
-                                    <div className="p-12 text-center bg-surface-1 border border-border-1 rounded-xl border-dashed">
-                                        <div className="size-16 bg-bg-0 text-text-3 rounded-full flex items-center justify-center mx-auto mb-4">
-                                            <span className="material-symbols-outlined text-2xl">check_circle</span>
-                                        </div>
-                                        <h3 className="text-lg font-bold text-text-1">No issues found</h3>
-                                        <p className="text-text-3">Try adjusting your filters or run a new scan.</p>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Sidebar - WCAG & Actions */}
-                        <div className="space-y-6">
-                            <WcagBreakdown score={issue.wcagScore || 90} />
-
-                            <div className="bg-surface-1 border border-border-1 rounded-xl p-6">
-                                <h3 className="font-bold text-text-1 mb-4">Export Analysis</h3>
-                                <p className="text-sm text-text-3 mb-6">
-                                    Download a comprehensive PDF report including all identified issues and remediation steps.
-                                </p>
-                                <div className="flex flex-col gap-3">
-                                    <Button variant="secondary" fullWidth icon={<span className="material-symbols-outlined">picture_as_pdf</span>}>
-                                        Download PDF Report
-                                    </Button>
-                                    <Button variant="tertiary" fullWidth icon={<span className="material-symbols-outlined">html</span>}>
-                                        Download HTML Report
-                                    </Button>
-                                </div>
-                            </div>
+                    <div className="bg-surface-1 border border-border-1 rounded-xl p-6">
+                        <h3 className="font-bold text-text-1 mb-4">Export Analysis</h3>
+                        <p className="text-sm text-text-3 mb-6">
+                            Download a comprehensive PDF report including all identified issues and remediation steps.
+                        </p>
+                        <div className="flex flex-col gap-3">
+                            <Button variant="secondary" fullWidth icon={<span className="material-symbols-outlined">picture_as_pdf</span>} onClick={handleDownloadPdf}>
+                                Download PDF Report
+                            </Button>
+                            <Button variant="tertiary" fullWidth icon={<span className="material-symbols-outlined">html</span>} onClick={handleDownloadHtml}>
+                                Download HTML Report
+                            </Button>
                         </div>
                     </div>
                 </div>

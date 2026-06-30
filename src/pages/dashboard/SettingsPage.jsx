@@ -110,7 +110,7 @@ export default function SettingsPage() {
                                 <div className="col-span-full flex items-center gap-6 pb-4 border-b border-border-1">
                                     <div
                                         className="size-20 rounded-xl bg-cover bg-center border-2 border-accent-1/40 relative group cursor-pointer bg-bg-2"
-                                        style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuCdwcTSa2fyJdubvyerrPf13PS7AdWCOUQmdJbxiApisNxsDjCWOrjPYN7O4-Ad8tm-84lqM8nA5pW_tRZ0Une5bpKACgB0dttB8w2LVJTQHqPqlnO6q2lMzqflbbPyCPcdn14t_EtAq9IW_DozkJlFTBgXBbLhZVS5dMYyQDDawvnZGzhbwG2r0kKduWVPCPTMBu0n2Ctsg5Yjn6fQrGm9UQ3bBcuGNPqraXVaKQla1ot1CQGuhRxf4TJHnUJtb643QsKJ4ZGNr_I3")' }}
+                                        style={{ backgroundImage: `url("https://ui-avatars.com/api/?name=${encodeURIComponent(profile.name || 'User')}&background=random")` }}
                                     >
                                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity rounded-xl">
                                             <span className="material-symbols-outlined text-white">photo_camera</span>

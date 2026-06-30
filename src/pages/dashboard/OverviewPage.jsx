@@ -13,7 +13,7 @@ import userService from "../../services/userService";
 
 // Mock data imports
 // TODO: replace with real API
-import criticalIssues from "@/assets/api/criticalIssues.json";
+// criticalIssues is now derived from API
 
 function SearchIcon() {
     return (
@@ -61,7 +61,19 @@ export default function OverviewPage() {
         ])
             .then(([statsRes, historyRes, auditsRes]) => {
                 setStats(statsRes?.data || statsRes);
-                setScanHistory(historyRes?.data || historyRes);
+                const rawHistory = historyRes?.data || historyRes || [];
+                
+                // Format history data for the chart since the backend returns an array of scans
+                const formattedHistory = {
+                    totalScans: rawHistory.length,
+                    monthlyTrend: 15, // Stub trend
+                    chartPath: "M0,130 C100,110 200,140 300,80 C400,40 478,70 478,70", // Stub chart path
+                    weeklyData: [
+                        { week: "W1" }, { week: "W2" }, { week: "W3" }, { week: "W4" }
+                    ]
+                };
+                
+                setScanHistory(formattedHistory);
 
                 const audits = auditsRes?.data?.audits || auditsRes?.audits || [];
                 const mapped = audits.map(a => ({
@@ -71,7 +83,8 @@ export default function OverviewPage() {
                     score: a.score || a.performanceScore || 0,
                     issuesCount: a.summary?.issueCount || a.issuesCount || 0,
                     lastScanned: a.createdAt ? new Date(a.createdAt).toLocaleDateString() : (a.lastScanned || "Unknown"),
-                    status: a.status || "healthy"
+                    status: a.status || "healthy",
+                    issues: a.issues || []
                 }));
                 setProjects(mapped);
             })
@@ -207,7 +220,12 @@ export default function OverviewPage() {
                     <ScanVelocityChart data={scanHistory} />
                 )}
                 
-                <CriticalIssues issues={criticalIssues} />
+                <CriticalIssues issues={
+                    projects
+                        .flatMap(p => p.issues || [])
+                        .filter(i => i.severity === 'critical')
+                        .slice(0, 5) // Show top 5 critical issues
+                } />
             </div>
 
             {/* Projects Table */}

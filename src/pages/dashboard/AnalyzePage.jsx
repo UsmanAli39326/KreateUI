@@ -70,7 +70,11 @@ export default function AnalyzeDashboard() {
 
     let aiParam = options.aiRecommendations;
     try {
-      const res = await fetch("https://webuifixer.onrender.com/health");
+      const baseUrl = import.meta.env.VITE_BASE_URL 
+          ? import.meta.env.VITE_BASE_URL.replace(/\/api\/?$/, '') 
+          : 'https://webuifixer.onrender.com';
+      const res = await fetch(`${baseUrl}/health`);
+      if (!res.ok) throw new Error("Health check failed");
       const data = await res.json();
       if (!data.aiEngine || data.aiEngine === "down") {
         setOptions((prev) => ({ ...prev, aiRecommendations: false }));
@@ -78,6 +82,7 @@ export default function AnalyzeDashboard() {
         toast.warning("AI engine is currently unavailable — running standard audit.");
       }
     } catch (err) {
+      console.warn("Health check failed:", err);
       setOptions((prev) => ({ ...prev, aiRecommendations: false }));
       aiParam = false;
       toast.warning("AI engine is currently unavailable — running standard audit.");
