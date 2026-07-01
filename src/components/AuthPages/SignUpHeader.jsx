@@ -24,7 +24,7 @@ export default function SignUpHeader() {
       <div className="flex items-center gap-4">
         <span className="hidden md:block text-sm text-text-3">Already have an account?</span>
 
-        <Link to="/auth/login">
+        <Link to="/auth">
           <Button variant="secondary" size="sm" className="border border-border-2 bg-primary/10 text-primary">
             Log In
           </Button>

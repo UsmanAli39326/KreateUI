@@ -233,7 +233,7 @@ export default function SignUpFormCard({ onSubmit, onContinueGoogle, onContinueG
           </Button>
         </form>
 
-        {/* Divider */}
+        {/* Divider and OAuth buttons - Hidden for now
         <div className="relative flex items-center py-6">
           <div className="flex-grow border-t border-border-1" />
           <span className="flex-shrink mx-4 text-xs font-bold uppercase tracking-widest text-text-3">
@@ -242,7 +242,6 @@ export default function SignUpFormCard({ onSubmit, onContinueGoogle, onContinueG
           <div className="flex-grow border-t border-border-1" />
         </div>
 
-        {/* OAuth buttons */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Button
             variant="secondary"
@@ -272,6 +271,7 @@ export default function SignUpFormCard({ onSubmit, onContinueGoogle, onContinueG
             GitHub
           </Button>
         </div>
+        */}
 
         <p className="text-center mt-8 text-sm text-text-3">
           Already a member?{" "}

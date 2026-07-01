@@ -1,10 +1,11 @@
 import React, { useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function FinalCTA() {
   const btnRef = useRef(null);
   const [position, setPosition] = useState({ x: 0, y: 0 });
+  const navigate = useNavigate();
 
   const handleMouseMove = (e) => {
     if (!btnRef.current) return;
@@ -55,6 +56,7 @@ export default function FinalCTA() {
             ref={btnRef}
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
+            onClick={() => navigate("/dashboard")}
             animate={{ x: position.x, y: position.y }}
             transition={{ type: "spring", stiffness: 150, damping: 15, mass: 0.1 }}
             className="relative bg-primary text-white text-lg font-bold px-10 py-5 rounded-2xl transition-colors hover:bg-accent-hover shadow-[0_0_40px_rgba(232,116,59,0.4)] cursor-pointer group"

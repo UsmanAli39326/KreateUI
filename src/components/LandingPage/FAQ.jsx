@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Link } from "react-router-dom";
 
 const faqs = [
   {
@@ -55,13 +56,13 @@ export default function FAQ() {
             <p className="text-text-2 text-lg leading-relaxed mb-8">
               Can't find what you're looking for? Reach out to our team directly.
             </p>
-            <a
-              href="mailto:hello@kreateui.com"
+            <Link
+              to="/contact"
               className="inline-flex items-center gap-2 bg-navy text-white font-bold px-6 py-3 rounded-xl hover:bg-navy-hover transition-colors shadow-ambient"
             >
               <span className="material-symbols-outlined text-base">mail</span>
               Contact support
-            </a>
+            </Link>
           </div>
 
           {/* Right column: accordion */}
