@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import DashboardShell from "@/components/Dashboard/DashboardShell";
 import Button from "@/components/Common/Button";
@@ -6,12 +6,18 @@ import Input from "@/components/Common/Input";
 import { useToast } from "@/components/Common";
 import userService from "../../services/userService";
 import { clearTokens } from "../../services/apiService";
+import { useAuth } from "../../context/AuthContext";
 
 export default function SettingsPage() {
     const toast = useToast();
+    const { refreshProfile } = useAuth();
     const [activeTab, setActiveTab] = useState("profile");
     const [profile, setProfile] = useState({ name: "", email: "" });
     const [isSaving, setIsSaving] = useState(false);
+    const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+    const [passwordForm, setPasswordForm] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
+    const [isChangingPassword, setIsChangingPassword] = useState(false);
+    const photoInputRef = useRef(null);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -30,11 +36,62 @@ export default function SettingsPage() {
         setIsSaving(true);
         try {
             await userService.updateProfile({ name: profile.name });
+            await refreshProfile(); // Sync AuthContext user object
             toast.success("Profile details updated successfully!", "Success");
         } catch (err) {
             toast.error("Failed to update profile settings.", "Update Error");
         } finally {
             setIsSaving(false);
+        }
+    };
+
+    const handlePhotoChange = async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        if (file.size > 2 * 1024 * 1024) {
+            toast.error("File size must be under 2MB.", "File Too Large");
+            return;
+        }
+        setIsUploadingPhoto(true);
+        try {
+            const formData = new FormData();
+            formData.append('photo', file);
+            await userService.uploadProfilePhoto(formData);
+            await refreshProfile();
+            toast.success("Profile photo updated!", "Success");
+        } catch (err) {
+            toast.error(err?.error || "Failed to upload photo.", "Upload Error");
+        } finally {
+            setIsUploadingPhoto(false);
+            e.target.value = ''; // reset input
+        }
+    };
+
+    const handleChangePassword = async () => {
+        if (!passwordForm.currentPassword || !passwordForm.newPassword) {
+            toast.error("Please fill in all password fields.", "Validation");
+            return;
+        }
+        if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+            toast.error("New passwords do not match.", "Validation");
+            return;
+        }
+        if (passwordForm.newPassword.length < 8) {
+            toast.error("New password must be at least 8 characters.", "Validation");
+            return;
+        }
+        setIsChangingPassword(true);
+        try {
+            await userService.changePassword({
+                currentPassword: passwordForm.currentPassword,
+                newPassword: passwordForm.newPassword,
+            });
+            toast.success("Password changed successfully!", "Success");
+            setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
+        } catch (err) {
+            toast.error(err?.error || "Failed to change password.", "Error");
+        } finally {
+            setIsChangingPassword(false);
         }
     };
 
@@ -61,7 +118,8 @@ export default function SettingsPage() {
 
     const tabs = [
         { id: "profile", label: "Profile", icon: "person" },
-        { id: "danger", label: "Danger Zone", icon: "error", className: "text-danger hover:text-danger/80" }, // specific styling
+        { id: "security", label: "Security", icon: "lock" },
+        { id: "danger", label: "Danger Zone", icon: "error", className: "text-danger hover:text-danger/80" },
     ];
 
     return (
@@ -108,16 +166,32 @@ export default function SettingsPage() {
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 rounded-xl border border-border-1 bg-surface-1">
                                 <div className="col-span-full flex items-center gap-6 pb-4 border-b border-border-1">
+                                    {/* Hidden file input for photo upload */}
+                                    <input
+                                        ref={photoInputRef}
+                                        type="file"
+                                        accept="image/jpeg,image/png,image/gif"
+                                        className="hidden"
+                                        onChange={handlePhotoChange}
+                                    />
                                     <div
                                         className="size-20 rounded-xl bg-cover bg-center border-2 border-accent-1/40 relative group cursor-pointer bg-bg-2"
                                         style={{ backgroundImage: `url("https://ui-avatars.com/api/?name=${encodeURIComponent(profile.name || 'User')}&background=random")` }}
+                                        onClick={() => photoInputRef.current?.click()}
                                     >
                                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity rounded-xl">
-                                            <span className="material-symbols-outlined text-white">photo_camera</span>
+                                            <span className="material-symbols-outlined text-white">{isUploadingPhoto ? 'sync' : 'photo_camera'}</span>
                                         </div>
                                     </div>
                                     <div className="flex flex-col gap-2">
-                                        <Button variant="secondary" size="sm">Change Photo</Button>
+                                        <Button
+                                            variant="secondary"
+                                            size="sm"
+                                            onClick={() => photoInputRef.current?.click()}
+                                            disabled={isUploadingPhoto}
+                                        >
+                                            {isUploadingPhoto ? 'Uploading...' : 'Change Photo'}
+                                        </Button>
                                         <p className="text-text-3 text-[11px]">JPG, GIF or PNG. Max size 2MB.</p>
                                     </div>
                                 </div>
@@ -136,9 +210,42 @@ export default function SettingsPage() {
                             </div>
                         </section>
 
+                        {/* Security / Password Section */}
+                        <section id="security" className="pt-12 border-t border-border-1 space-y-6 scroll-mt-6">
+                            <div>
+                                <h3 className="text-xl font-bold text-text-1">Security</h3>
+                                <p className="text-text-3 text-sm mt-1">Change your account password.</p>
+                            </div>
+                            <div className="grid grid-cols-1 gap-4 p-6 rounded-xl border border-border-1 bg-surface-1">
+                                <Input
+                                    id="current-password"
+                                    label="Current Password"
+                                    type="password"
+                                    value={passwordForm.currentPassword}
+                                    onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
+                                />
+                                <Input
+                                    id="new-password"
+                                    label="New Password"
+                                    type="password"
+                                    value={passwordForm.newPassword}
+                                    onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+                                />
+                                <Input
+                                    id="confirm-password"
+                                    label="Confirm New Password"
+                                    type="password"
+                                    value={passwordForm.confirmPassword}
+                                    onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
+                                />
+                            </div>
+                            <div className="flex justify-end">
+                                <Button variant="primary" onClick={handleChangePassword} disabled={isChangingPassword}>
+                                    {isChangingPassword ? 'Updating...' : 'Update Password'}
+                                </Button>
+                            </div>
+                        </section>
 
-
-                        {/* Danger Zone */}
                         <section id="danger" className="pt-12 border-t border-border-1 space-y-4">
                             <h3 className="text-xl font-bold text-danger">Danger Zone</h3>
                             <div className="p-6 rounded-xl border border-danger/30 bg-danger/5 flex items-center justify-between">

@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DashboardShell from "@/components/Dashboard/DashboardShell";
 import Button from "@/components/Common/Button";
 import { useToast } from "@/components/Common";
-import userService from "../../services/userService";
 import auditService from "../../services/auditService";
+import { useUserStats } from "../../hooks/useUserStats";
 
 function StatCard({ title, value, subValue, subLabel, subColor, progressColor, progressValue }) {
     return (
@@ -46,58 +46,27 @@ function StatusBadge({ status }) {
 export default function ReportsPage() {
     const toast = useToast();
     const navigate = useNavigate();
-    const [stats, setStats] = useState({
-        overall: { score: 0, trend: 0 },
-        levelA: { score: 0 },
-        levelAA: { score: 0 },
-        levelAAA: { score: 0 }
-    });
-    const [audit, setAudit] = useState([]);
-    const [loading, setLoading] = useState(true);
     const [page, setPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(1);
 
-    const loadStats = async () => {
-        try {
-            const res = await userService.getStats();
-            if (res) {
-                setStats({
-                    overall: { score: res.accessibilityScore || 0, trend: 0 },
-                    levelA: { score: res.accessibilityScore || 0 },
-                    levelAA: { score: Math.round((res.accessibilityScore || 0) * 0.9) },
-                    levelAAA: { score: Math.round((res.accessibilityScore || 0) * 0.7) }
-                });
-            }
-        } catch (err) {
-            console.error("Failed to load stats", err);
-        }
+    // useUserStats fetches stats + audit list in one shot
+    const { stats: rawStats, audits, isLoading: loading, refetch } = useUserStats({
+        auditPage: page,
+        auditLimit: 10,
+    });
+
+    // Derive WCAG-level scores from the real accessibilityScore
+    const accessScore = rawStats?.accessibilityScore?.value ?? rawStats?.accessibilityScore ?? 0;
+    const stats = {
+        overall: { score: accessScore, trend: rawStats?.accessibilityScore?.trend ?? 0 },
+        levelA: { score: accessScore },
+        levelAA: { score: rawStats?.levelAA ?? Math.round(accessScore * 0.9) },
+        levelAAA: { score: rawStats?.levelAAA ?? Math.round(accessScore * 0.7) },
     };
 
-    const loadAudits = async (currentPage = 1) => {
-        try {
-            setLoading(true);
-            const res = await userService.getComplianceReport();
-            const criteriaList = res?.data || res || [];
-            
-            setTotalPages(1); // Usually a compliance report is a single list of criteria
-            
-            if (criteriaList && criteriaList.length > 0) {
-                setAudit(criteriaList);
-            } else {
-                setAudit([]);
-            }
-        } catch (err) {
-            console.error("Failed to load compliance report", err);
-            toast.error("Failed to load compliance audit history from server.", "Load Error");
-        } finally {
-            setLoading(false);
-        }
-    };
+    const audit = audits || [];
+    const totalPages = Math.ceil((rawStats?.totalAudits || audit.length) / 10) || 1;
 
-    useEffect(() => {
-        loadAudits(page);
-        loadStats();
-    }, [page]);
+
 
     const handleExportPdf = async (id = 1) => {
         try {
@@ -120,7 +89,7 @@ export default function ReportsPage() {
         try {
             await auditService.deleteAudit(id);
             toast.success("Audit report deleted successfully.", "Deleted");
-            loadAudits(); // reload after delete
+            refetch(); // reload after delete
         } catch (err) {
             console.error("Failed to delete audit", err);
             toast.error("Failed to delete the selected audit report.", "Delete Error");

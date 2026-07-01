@@ -1,43 +1,20 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import DashboardShell from "@/components/Dashboard/DashboardShell";
 import Button from "@/components/Common/Button";
-import adminService from "../../services/adminService";
+import { useAdminData } from "../../hooks/useAdminData";
 import { useToast } from "@/components/Common";
+import adminService from "../../services/adminService";
 
 export default function AdminPage() {
     const toast = useToast();
-    const [analytics, setAnalytics] = useState(null);
-    const [logs, setLogs] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-
-    const loadAdminData = async () => {
-        try {
-            setLoading(true);
-            const [analyticsRes, logsRes] = await Promise.all([
-                adminService.getAnalytics().catch(() => ({ data: { totalUsers: 0, activeProjects: 0 } })),
-                adminService.getLogs(1).catch(() => ({ data: [] }))
-            ]);
-            setAnalytics(analyticsRes.data);
-            setLogs(logsRes.data || []);
-        } catch (err) {
-            console.error("Failed to load admin data", err);
-            setError("Failed to load admin dashboard data.");
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        loadAdminData();
-    }, []);
+    const { analytics, users, logs, pendingTemplates, isLoading: loading, error, refetch: loadAdminData } = useAdminData();
 
     const handleDeleteUser = async (userId) => {
         if (!confirm("Are you sure you want to delete this user?")) return;
         try {
             await adminService.deleteUser(userId);
             toast.success("User deleted successfully.");
-            // Ideally we'd reload the user list if we had one
+            loadAdminData();
         } catch (err) {
             console.error("Failed to delete user", err);
             toast.error("Failed to delete user.");
@@ -48,12 +25,33 @@ export default function AdminPage() {
         try {
             await adminService.toggleUserBlock(userId);
             toast.success("User block status toggled.");
-            // Ideally we'd reload the user list if we had one
+            loadAdminData();
         } catch (err) {
             console.error("Failed to toggle block", err);
             toast.error("Failed to toggle user block status.");
         }
     };
+
+    const handleApproveTemplate = async (id) => {
+        try {
+            await adminService.approveTemplate(id);
+            toast.success("Template approved.");
+            loadAdminData();
+        } catch (err) {
+            toast.error("Failed to approve template.");
+        }
+    };
+
+    const handleRejectTemplate = async (id) => {
+        try {
+            await adminService.rejectTemplate(id);
+            toast.success("Template rejected.");
+            loadAdminData();
+        } catch (err) {
+            toast.error("Failed to reject template.");
+        }
+    };
+
 
     return (
         <DashboardShell active="admin">
@@ -91,33 +89,103 @@ export default function AdminPage() {
                         </div>
                     </section>
 
-                    {/* Example User Management Section */}
+                    {/* User Management Table */}
                     <section>
-                        <h3 className="text-xl font-bold text-text-1 mb-4">Quick User Actions</h3>
-                        <div className="p-6 rounded-xl bg-surface-1 border border-border-1 shadow-sm flex flex-col md:flex-row gap-4 items-center">
-                            <input 
-                                type="text" 
-                                placeholder="Enter User ID" 
-                                className="flex-1 bg-surface-2 border border-border-1 rounded-lg px-4 py-2 text-text-1 focus:outline-none focus:border-accent-1"
-                                id="admin-user-id"
-                            />
-                            <div className="flex gap-2 w-full md:w-auto">
-                                <Button 
-                                    variant="secondary" 
-                                    onClick={() => handleToggleBlock(document.getElementById('admin-user-id').value)}
-                                >
-                                    Toggle Block
-                                </Button>
-                                <Button 
-                                    variant="danger" 
-                                    className="!bg-danger/10 !text-danger hover:!bg-danger/20 border !border-danger/20"
-                                    onClick={() => handleDeleteUser(document.getElementById('admin-user-id').value)}
-                                >
-                                    Delete User
-                                </Button>
-                            </div>
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-xl font-bold text-text-1">User Management</h3>
+                            <Button variant="tertiary" size="sm" onClick={loadAdminData}>Refresh</Button>
+                        </div>
+                        <div className="rounded-xl bg-surface-1 border border-border-1 overflow-hidden">
+                            {users.length > 0 ? (
+                                <table className="w-full text-sm">
+                                    <thead className="bg-surface-2 border-b border-border-1">
+                                        <tr>
+                                            <th className="text-left px-4 py-3 text-text-3 font-medium">Name</th>
+                                            <th className="text-left px-4 py-3 text-text-3 font-medium">Email</th>
+                                            <th className="text-left px-4 py-3 text-text-3 font-medium">Role</th>
+                                            <th className="text-left px-4 py-3 text-text-3 font-medium">Status</th>
+                                            <th className="text-right px-4 py-3 text-text-3 font-medium">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-border-1">
+                                        {users.map((u) => (
+                                            <tr key={u.id || u._id} className="hover:bg-surface-2 transition-colors">
+                                                <td className="px-4 py-3 text-text-1 font-medium">{u.name || '—'}</td>
+                                                <td className="px-4 py-3 text-text-2">{u.email}</td>
+                                                <td className="px-4 py-3">
+                                                    <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${
+                                                        u.role === 'admin' ? 'bg-accent-1/10 text-accent-1' : 'bg-surface-2 text-text-3'
+                                                    }`}>{u.role || 'user'}</span>
+                                                </td>
+                                                <td className="px-4 py-3">
+                                                    <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${
+                                                        u.blocked ? 'bg-danger/10 text-danger' : 'bg-success/10 text-success'
+                                                    }`}>{u.blocked ? 'Blocked' : 'Active'}</span>
+                                                </td>
+                                                <td className="px-4 py-3">
+                                                    <div className="flex gap-2 justify-end">
+                                                        <Button variant="tertiary" size="sm"
+                                                            onClick={() => handleToggleBlock(u.id || u._id)}
+                                                        >
+                                                            {u.blocked ? 'Unblock' : 'Block'}
+                                                        </Button>
+                                                        <Button variant="tertiary" size="sm"
+                                                            className="!text-danger hover:!bg-danger/10"
+                                                            onClick={() => handleDeleteUser(u.id || u._id)}
+                                                        >
+                                                            Delete
+                                                        </Button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            ) : (
+                                <div className="p-8 text-center text-text-3">
+                                    <span className="material-symbols-outlined text-4xl mb-2 opacity-50">group</span>
+                                    <p>No users found.</p>
+                                </div>
+                            )}
                         </div>
                     </section>
+
+                    {/* Pending Templates Section */}
+                    {pendingTemplates.length > 0 && (
+                        <section>
+                            <h3 className="text-xl font-bold text-text-1 mb-4">
+                                Pending Templates
+                                <span className="ml-2 text-sm bg-warning/10 text-warning px-2 py-0.5 rounded-full font-bold">
+                                    {pendingTemplates.length}
+                                </span>
+                            </h3>
+                            <div className="rounded-xl bg-surface-1 border border-border-1 overflow-hidden divide-y divide-border-1">
+                                {pendingTemplates.map((t) => (
+                                    <div key={t.id || t._id} className="p-4 flex flex-col sm:flex-row gap-4 sm:items-center hover:bg-surface-2 transition-colors">
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-text-1 font-medium truncate">{t.name || 'Unnamed Template'}</p>
+                                            <p className="text-text-3 text-xs mt-0.5">{t.description || 'No description'}</p>
+                                            <p className="text-text-3 text-xs mt-0.5">By: {t.authorName || t.uploadedBy || '—'}</p>
+                                        </div>
+                                        <div className="flex gap-2 shrink-0">
+                                            <Button variant="tertiary" size="sm"
+                                                className="!text-success hover:!bg-success/10 !border-success/20"
+                                                onClick={() => handleApproveTemplate(t.id || t._id)}
+                                            >
+                                                Approve
+                                            </Button>
+                                            <Button variant="tertiary" size="sm"
+                                                className="!text-danger hover:!bg-danger/10"
+                                                onClick={() => handleRejectTemplate(t.id || t._id)}
+                                            >
+                                                Reject
+                                            </Button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </section>
+                    )}
 
                     {/* System Logs Section */}
                     <section>

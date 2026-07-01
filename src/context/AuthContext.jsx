@@ -55,7 +55,8 @@ export const AuthProvider = ({ children }) => {
     loading,
     login,
     logout,
-    setUser
+    setUser,
+    refreshProfile: fetchProfile, // Expose so pages can re-sync user after profile updates
   };
 
   return (

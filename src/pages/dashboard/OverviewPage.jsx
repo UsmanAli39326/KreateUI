@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import DashboardShell from "@/components/Dashboard/DashboardShell";
 import Breadcrumbs from "@/components/Dashboard/BreadCrumbs";
@@ -9,11 +9,7 @@ import ProjectsTable from "@/components/Dashboard/ProjectsTable";
 import Button from "@/components/Common/Button";
 import Skeleton from "@/components/Common/Skeleton";
 import { useToast } from "@/components/Common";
-import userService from "../../services/userService";
-
-// Mock data imports
-// TODO: replace with real API
-// criticalIssues is now derived from API
+import { useUserStats } from "../../hooks/useUserStats";
 
 function SearchIcon() {
     return (
@@ -44,58 +40,34 @@ function BellIcon() {
 
 export default function OverviewPage() {
     const navigate = useNavigate();
-    const [searchQuery, setSearchQuery] = useState("");
-    const [stats, setStats] = useState(null);
-    const [scanHistory, setScanHistory] = useState(null);
-    const [projects, setProjects] = useState([]);
-
-    const [isLoading, setIsLoading] = useState(true);
     const toast = useToast();
+    const [searchQuery, setSearchQuery] = useState("");
 
-    useEffect(() => {
-        setIsLoading(true);
-        Promise.all([
-            userService.getStats(),
-            userService.getScanHistory(30),
-            userService.getAudits(1, 5)
-        ])
-            .then(([statsRes, historyRes, auditsRes]) => {
-                setStats(statsRes?.data || statsRes);
-                const rawHistory = historyRes?.data || historyRes || [];
-                
-                // Format history data for the chart since the backend returns an array of scans
-                const formattedHistory = {
-                    totalScans: rawHistory.length,
-                    monthlyTrend: 15, // Stub trend
-                    chartPath: "M0,130 C100,110 200,140 300,80 C400,40 478,70 478,70", // Stub chart path
-                    weeklyData: [
-                        { week: "W1" }, { week: "W2" }, { week: "W3" }, { week: "W4" }
-                    ]
-                };
-                
-                setScanHistory(formattedHistory);
+    // useUserStats hook: fetches stats + real scan history + recent audits
+    const { stats, scanHistory, audits: rawAudits, isLoading, error } = useUserStats({
+        auditPage: 1,
+        auditLimit: 5,
+        historyDays: 30,
+    });
 
-                const audits = auditsRes?.data?.audits || auditsRes?.audits || [];
-                const mapped = audits.map(a => ({
-                    id: a.id || a._id || Math.random().toString(),
-                    name: a.name || a.targetUrl || "Unknown Project",
-                    icon: a.icon || "globe",
-                    score: a.score || a.performanceScore || 0,
-                    issuesCount: a.summary?.issueCount || a.issuesCount || 0,
-                    lastScanned: a.createdAt ? new Date(a.createdAt).toLocaleDateString() : (a.lastScanned || "Unknown"),
-                    status: a.status || "healthy",
-                    issues: a.issues || []
-                }));
-                setProjects(mapped);
-            })
-            .catch((err) => {
-                console.error("Dashboard data load error:", err);
-                toast.error("Failed to load dashboard data", "Error");
-            })
-            .finally(() => {
-                setIsLoading(false);
-            });
-    }, []);
+    // Show toast on error once
+    React.useEffect(() => {
+        if (error) toast.error(error, "Error");
+    }, [error]);
+
+    // Map raw audit objects to the shape ProjectsTable expects
+    const projects = (rawAudits || []).map(a => ({
+        id: a.id || a._id || Math.random().toString(),
+        name: a.name || a.targetUrl || a.url || "Unknown Project",
+        icon: a.icon || "globe",
+        score: a.score || a.performanceScore || 0,
+        issuesCount: a.summary?.issueCount || a.issuesCount || 0,
+        lastScanned: a.createdAt
+            ? new Date(a.createdAt).toLocaleDateString()
+            : (a.lastScanned || "Unknown"),
+        status: a.status || "healthy",
+        issues: a.issues || [],
+    }));
 
     const breadcrumbs = useMemo(
         () => [{ label: "Workspace", href: "/dashboard" }, { label: "Overview" }],
@@ -196,7 +168,7 @@ export default function OverviewPage() {
                     {/* Pending Recommendations */}
                     <StatsCard
                         title="Pending Recommendations"
-                        value={stats.totalIssues?.value ?? stats.totalIssues ?? 0}
+                        value={stats.pendingRecommendations?.criticalFixes ?? 0}
                         icon="lightbulb"
                         iconColor="text-blue-400"
                         subtitle={`${stats.pendingRecommendations?.criticalFixes || 0} Critical fixes auto-generated`}

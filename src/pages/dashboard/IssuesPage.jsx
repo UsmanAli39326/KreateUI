@@ -60,13 +60,39 @@ export default function IssuesPage() {
                 <Breadcrumbs items={breadcrumbs} />
 
                 {/* Page Heading */}
-                <div className="py-6 flex flex-col gap-2 border-b border-border-1">
-                    <h1 className="text-3xl font-black text-text-1">Issues Found</h1>
-                    {url && (
-                        <p className="text-text-3 text-sm font-medium">
-                            Audit URL: <a href={url} target="_blank" rel="noreferrer" className="text-accent-1 hover:underline">{url}</a>
-                        </p>
-                    )}
+                <div className="py-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-border-1">
+                    <div className="flex flex-col gap-2">
+                        <h1 className="text-3xl font-black text-text-1">Issues Found</h1>
+                        {url && (
+                            <p className="text-text-3 text-sm font-medium">
+                                Audit URL: <a href={url} target="_blank" rel="noreferrer" className="text-accent-1 hover:underline">{url}</a>
+                            </p>
+                        )}
+                    </div>
+                    <Button 
+                        variant="primary" 
+                        onClick={async () => {
+                            if (!auditId || filteredIssues.length === 0) return;
+                            const batchSize = 10;
+                            setIsLoading(true);
+                            try {
+                                for (let i = 0; i < filteredIssues.length; i += batchSize) {
+                                    const batch = filteredIssues.slice(i, i + batchSize);
+                                    await auditService.generateFixes(auditId, batch);
+                                }
+                                alert("Batched AI fixes generation completed.");
+                            } catch (error) {
+                                console.error("Error generating fixes", error);
+                                alert("Failed to generate some AI fixes.");
+                            } finally {
+                                setIsLoading(false);
+                            }
+                        }}
+                        disabled={isLoading || filteredIssues.length === 0}
+                        icon={<span className="material-symbols-outlined text-lg">auto_fix_high</span>}
+                    >
+                        {isLoading ? "Generating..." : "Generate AI Fixes (Batched)"}
+                    </Button>
                 </div>
 
                 {/* Filter Bar */}

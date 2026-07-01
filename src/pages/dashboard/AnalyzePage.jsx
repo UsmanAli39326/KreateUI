@@ -88,30 +88,43 @@ export default function AnalyzeDashboard() {
       toast.warning("AI engine is currently unavailable — running standard audit.");
     }
 
-    // Navigate to the in-progress page with URL as query param
-    navigate(`/dashboard/analyze/progress?url=${encodeURIComponent(formattedUrl)}&ai=${aiParam}`);
+    // Delay navigation for HUD effect
+    setTimeout(() => {
+        navigate(`/dashboard/analyze/progress?url=${encodeURIComponent(formattedUrl)}&ai=${aiParam}`);
+    }, 800);
   };
 
   return (
     <DashboardShell active="analyze">
       <Breadcrumbs items={breadcrumbs} />
-      <PageHeader
-        title="Analyze Website"
-        subtitle="Enter a URL to audit accessibility, usability, and UI performance in seconds."
-      />
+      
+      <div className="flex flex-col items-center justify-center min-h-[50vh] max-w-4xl mx-auto text-center space-y-12">
+          <div>
+            <h1 className="text-4xl md:text-6xl font-black text-text-1 tracking-tight mb-4 bg-gradient-to-r from-text-1 to-text-3 bg-clip-text text-transparent">
+              Audit Your Website
+            </h1>
+            <p className="text-lg text-text-3 max-w-2xl mx-auto">
+              Enter a URL to evaluate accessibility, usability, and UI performance in seconds with our advanced AI engine.
+            </p>
+          </div>
 
-      <section className="mb-16">
-        <AnalyzeBar
-          url={url}
-          setUrl={setUrl}
-          onAnalyze={onAnalyze}
-          isAnalyzing={isAnalyzing}
-          canAnalyze={canAnalyze}
-        />
-        <QuickOptions options={options} setOptions={setOptions} />
+          <div className="w-full relative z-10 transition-transform duration-500 ease-out hover:scale-[1.01]">
+            <AnalyzeBar
+              url={url}
+              setUrl={setUrl}
+              onAnalyze={onAnalyze}
+              isAnalyzing={isAnalyzing}
+              canAnalyze={canAnalyze}
+            />
+            <div className="mt-8">
+              <QuickOptions options={options} setOptions={setOptions} />
+            </div>
+          </div>
+      </div>
+
+      <section className="mt-20 max-w-5xl mx-auto">
+        <RecentScans scans={scans} />
       </section>
-
-      <RecentScans scans={scans} />
     </DashboardShell>
   );
 }

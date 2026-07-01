@@ -87,6 +87,7 @@ export default function AnalyzeInProgressPage() {
     const [auditId, setAuditId] = useState(null);
     const [auditError, setAuditError] = useState(null);
     const [currentTipIndex, setCurrentTipIndex] = useState(0);
+    const apiRespondedRef = useRef(false);
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -109,6 +110,7 @@ export default function AnalyzeInProgressPage() {
                 if (auditIdValue) {
                     setAuditId(auditIdValue);
                 }
+                apiRespondedRef.current = true;
             })
             .catch(err => {
                 console.error("Audit failed", err);
@@ -128,6 +130,7 @@ export default function AnalyzeInProgressPage() {
         setProgress(0);
         setIsComplete(false);
         setAuditId(null);
+        apiRespondedRef.current = false;
         runAudit(url);
     };
 
@@ -148,13 +151,21 @@ export default function AnalyzeInProgressPage() {
             stepProgress += progressIncrement;
 
             if (stepProgress >= 100) {
-                stepProgress = 0;
                 const next = currentStepRef.current + 1;
                 if (next >= analysisSteps.length) {
-                    clearInterval(timer);
-                    setIsComplete(true);
+                    if (apiRespondedRef.current) {
+                        clearInterval(timer);
+                        setIsComplete(true);
+                        setProgress(100);
+                    } else {
+                        // Hold progress if API hasn't responded yet
+                        stepProgress = 99;
+                        setProgress(99);
+                    }
                     return;
                 }
+                
+                stepProgress = 0;
                 currentStepRef.current = next;
                 setCurrentStep(next);
             }
@@ -162,7 +173,11 @@ export default function AnalyzeInProgressPage() {
             // Calculate overall progress from the ref (always current, no stale closure)
             const overallProgress =
                 ((currentStepRef.current * 100) + stepProgress) / analysisSteps.length;
-            setProgress(Math.min(overallProgress, 100));
+            
+            // Only update progress normally if we haven't reached the end yet
+            if (currentStepRef.current < analysisSteps.length) {
+                setProgress(Math.min(overallProgress, 99));
+            }
         }, tickInterval);
 
         return () => clearInterval(timer);
@@ -242,60 +257,54 @@ export default function AnalyzeInProgressPage() {
                                 </div>
                             </div>
 
-                            {/* Steps List */}
-                            <div className="space-y-3">
-                                {analysisSteps.map((step, idx) => {
-                                    const isActive = idx === currentStep && !isComplete;
-                                    const isStepComplete = idx < currentStep || isComplete;
+                            {/* Terminal HUD */}
+                            <div className="bg-[#0a0a0f] border border-border-1 rounded-xl p-4 font-mono text-sm shadow-inner overflow-hidden relative">
+                                <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border-1/30">
+                                    <div className="size-3 rounded-full bg-danger/80"></div>
+                                    <div className="size-3 rounded-full bg-warning/80"></div>
+                                    <div className="size-3 rounded-full bg-success/80"></div>
+                                    <span className="ml-2 text-text-3 text-xs tracking-wider">AI_ENGINE_v2.4.sh</span>
+                                </div>
+                                <div className="space-y-3 h-[220px] overflow-y-auto custom-scrollbar">
+                                    {analysisSteps.map((step, idx) => {
+                                        const isActive = idx === currentStep && !isComplete;
+                                        const isStepComplete = idx < currentStep || isComplete;
 
-                                    return (
-                                        <div
-                                            key={step.id}
-                                            className={`flex items-center gap-3 p-3 rounded-lg transition-all duration-300 relative overflow-hidden ${isActive
-                                                ? "border border-accent-1/20"
-                                                : isStepComplete
-                                                    ? "bg-success/5 border border-success/10"
-                                                    : "bg-bg-0/50 border border-transparent"
-                                                }`}
-                                        >
-                                            {/* Shimmer effect for active step */}
-                                            {isActive && (
-                                                <div className="absolute inset-0 bg-gradient-to-r from-accent-1/5 via-accent-1/15 to-accent-1/5 animate-pulse" />
-                                            )}
+                                        // Only show steps that have started
+                                        if (idx > currentStep && !isComplete) return null;
 
-                                            {/* Step indicator */}
-                                            <div className={`relative flex items-center justify-center size-8 rounded-full ${isStepComplete
-                                                ? "bg-success/20"
-                                                : isActive
-                                                    ? "bg-accent-1/20"
-                                                    : "bg-surface-2"
-                                                }`}>
-                                                {isStepComplete ? (
-                                                    <CheckIcon />
-                                                ) : (
-                                                    <StepIcon name={step.icon} isActive={isActive} isComplete={isStepComplete} />
-                                                )}
-                                            </div>
-
-                                            {/* Step label */}
-                                            <span className={`relative text-sm font-medium ${isStepComplete
-                                                ? "text-success"
-                                                : isActive
-                                                    ? "text-accent-1"
-                                                    : "text-text-3"
-                                                }`}>
-                                                {step.label}
-                                            </span>
-
-                                            {/* Loading indicator for active step */}
-                                            {isActive && (
-                                                <div className="relative ml-auto">
-                                                    <div className="size-4 border-2 border-accent-1 border-t-transparent rounded-full animate-spin" />
+                                        return (
+                                            <div key={step.id} className="flex items-start gap-3">
+                                                <span className="text-accent-1/70">&gt;</span>
+                                                <div className="flex-1">
+                                                    <span className={`transition-all duration-500 ${
+                                                        isStepComplete 
+                                                            ? "text-success drop-shadow-[0_0_8px_rgba(34,197,94,0.6)]" 
+                                                            : isActive ? "text-text-1" : "text-text-3"
+                                                    }`}>
+                                                        {step.label}...
+                                                    </span>
+                                                    {isStepComplete && (
+                                                        <span className="ml-2 text-success drop-shadow-[0_0_5px_rgba(34,197,94,0.8)] font-bold">
+                                                            [DONE]
+                                                        </span>
+                                                    )}
+                                                    {isActive && (
+                                                        <span className="ml-2 text-accent-1 animate-pulse font-bold">
+                                                            [PROCESSING]
+                                                        </span>
+                                                    )}
                                                 </div>
-                                            )}
+                                            </div>
+                                        );
+                                    })}
+                                    {!isComplete && (
+                                        <div className="flex items-start gap-3">
+                                            <span className="text-accent-1/70">&gt;</span>
+                                            <span className="inline-block w-2 h-4 bg-accent-1 animate-pulse mt-0.5"></span>
                                         </div>
-                                    );
-                                })}
+                                    )}
+                                </div>
                             </div>
 
                             {/* Action Buttons */}
