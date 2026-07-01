@@ -1,5 +1,6 @@
 import React, { useRef, useState } from "react";
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 
 export default function FinalCTA() {
   const btnRef = useRef(null);
@@ -64,9 +65,12 @@ export default function FinalCTA() {
             </span>
           </motion.button>
 
-          <button className="bg-transparent text-navy border border-navy/20 text-lg font-bold px-10 py-5 rounded-2xl hover:bg-navy/5 transition-all cursor-pointer">
+          <Link
+            to="/documentation"
+            className="bg-transparent text-navy border border-navy/20 text-lg font-bold px-10 py-5 rounded-2xl hover:bg-navy/5 transition-all cursor-pointer inline-flex items-center justify-center decoration-none"
+          >
             View Documentation
-          </button>
+          </Link>
         </motion.div>
 
         <p className="mt-10 text-navy/50 text-sm font-medium tracking-wide uppercase">
