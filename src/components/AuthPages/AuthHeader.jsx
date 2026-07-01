@@ -28,12 +28,12 @@ export default function AuthHeader({ onSignUpClick, hideSignUp = false }) {
           >
             Docs
           </Link>
-          <Link
+          {/* <Link
             className="text-text-3 text-sm font-bold hover:text-accent-1 transition-colors uppercase tracking-widest"
             to="/features"
           >
             Features
-          </Link>
+          </Link> */}
 
           {!hideSignUp && (
             <Button variant="primary" size="sm" onClick={onSignUpClick} className="shadow-lg shadow-accent-1/20">
