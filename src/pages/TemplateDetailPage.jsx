@@ -14,6 +14,7 @@ export default function TemplateDetailPage() {
     const [loading, setLoading] = useState(true);
     const [isPurchasing, setIsPurchasing] = useState(false);
     const [isDownloading, setIsDownloading] = useState(false);
+    const [hasPurchased, setHasPurchased] = useState(false);
 
     useEffect(() => {
         const fetchTemplate = async () => {
@@ -23,8 +24,8 @@ export default function TemplateDetailPage() {
                 const t = data.data || data;
                 setTemplate({
                     ...t,
-                    id: t._id || t.id,
-                    image: t.imagePath ? (t.imagePath.startsWith('http') ? t.imagePath : marketplaceService.getStaticFile(t.imagePath)) : t.image,
+                    id: t.id || t._id,
+                    image: t.imagePath ? (t.imagePath.startsWith('http') ? t.imagePath : marketplaceService.getStaticFileUrl(t.imagePath)) : t.image,
                 });
             } catch (err) {
                 console.error("Failed to load template", err);
@@ -41,10 +42,12 @@ export default function TemplateDetailPage() {
             setIsPurchasing(true);
             await marketplaceService.purchaseTemplate(templateId);
             toast.success("Template purchased successfully!");
+            setHasPurchased(true);
         } catch (err) {
             console.error("Purchase failed", err);
             if (err.response?.status === 501 || err.status === 501) {
                 toast.info("Purchase recorded! Payment integration coming soon.");
+                setHasPurchased(true);
             } else {
                 toast.error("Failed to purchase template");
             }
@@ -111,9 +114,11 @@ export default function TemplateDetailPage() {
                             style={{ backgroundImage: `url('${template.image || "https://via.placeholder.com/800x450"}')` }}
                         />
                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                            <Button variant="secondary" icon={<span className="material-symbols-outlined">visibility</span>}>
-                                Live Preview
-                            </Button>
+                            <a href={template.url} target="_blank" rel="noopener noreferrer">
+                                <Button variant="secondary" icon={<span className="material-symbols-outlined">visibility</span>}>
+                                    Live Preview
+                                </Button>
+                            </a>
                         </div>
                     </div>
 
@@ -169,10 +174,20 @@ export default function TemplateDetailPage() {
                             {!user && (
                                 <p className="text-sm text-accent-1 text-center font-medium mb-2">Sign in to download or purchase.</p>
                             )}
-                            <Button variant="primary" fullWidth size="lg" onClick={handleGetTemplate} disabled={!user || isPurchasing}>
-                                {isPurchasing ? "Processing..." : "Get Template"}
-                            </Button>
-                            <Button variant="secondary" fullWidth icon={<span className="material-symbols-outlined">download</span>} onClick={handleDownload} disabled={!user || isDownloading}>
+                            
+                            {hasPurchased ? (
+                                <div className="bg-success/10 border border-success/30 rounded-lg p-4 mb-4 text-center">
+                                    <span className="material-symbols-outlined text-success text-3xl mb-1">check_circle</span>
+                                    <h4 className="text-success font-bold">Template Purchased</h4>
+                                    <p className="text-sm text-success/80">You can now download the source files.</p>
+                                </div>
+                            ) : (
+                                <Button variant="primary" fullWidth size="lg" onClick={handleGetTemplate} disabled={!user || isPurchasing}>
+                                    {isPurchasing ? "Processing..." : "Get Template"}
+                                </Button>
+                            )}
+
+                            <Button variant={hasPurchased ? "primary" : "secondary"} fullWidth icon={<span className="material-symbols-outlined">download</span>} onClick={handleDownload} disabled={!user || isDownloading}>
                                 {isDownloading ? "Downloading..." : "Download Source ZIP"}
                             </Button>
                         </div>
@@ -181,26 +196,12 @@ export default function TemplateDetailPage() {
 
                         <div className="space-y-4 text-sm">
                             <div className="flex justify-between">
-                                <span className="text-text-3">Framework</span>
-                                <span className="font-medium text-text-1">{template.tech}</span>
-                            </div>
-                            <div className="flex justify-between">
                                 <span className="text-text-3">Version</span>
                                 <span className="font-medium text-text-1">{template.version || "1.0.0"}</span>
                             </div>
                             <div className="flex justify-between">
                                 <span className="text-text-3">Last Updated</span>
                                 <span className="font-medium text-text-1">{template.lastUpdated || "Recently"}</span>
-                            </div>
-                            <div className="pt-2">
-                                <span className="text-text-3 block mb-2">Tech Stack</span>
-                                <div className="flex flex-wrap gap-2">
-                                    {Array.isArray(template.stack) ? template.stack.map((s, i) => (
-                                        <span key={i} className="px-2 py-1 rounded bg-bg-2 border border-border-1 text-xs">{s}</span>
-                                    )) : (
-                                        <span className="px-2 py-1 rounded bg-bg-2 border border-border-1 text-xs">{template.stack}</span>
-                                    )}
-                                </div>
                             </div>
                         </div>
                     </div>

@@ -4,5 +4,6 @@
   { "id": "issues", "label": "Issues", "icon": "bug_report", "href": "/dashboard/issues" },
   { "id": "projects", "label": "Projects", "href": "/dashboard/projects", "icon": "layers" },
   { "id": "reports", "label": "Reports", "href": "/dashboard/reports", "icon": "file" },
+  { "id": "upload-template", "label": "Sell Template", "href": "/dashboard/upload-template", "icon": "layers" },
   { "id": "settings", "label": "Settings", "href": "/dashboard/settings", "icon": "settings" }
 ]

@@ -57,11 +57,13 @@ async function customFetch(endpoint, options = {}) {
     const contentType = response.headers.get('content-type');
 
     // Handle binary responses (e.g. PDF/ZIP)
-    if (contentType && (
+    if (url.includes('/download') || (contentType && (
       contentType.includes('application/pdf') ||
       contentType.includes('application/zip') ||
-      contentType.includes('application/octet-stream')
-    )) {
+      contentType.includes('application/x-zip-compressed') ||
+      contentType.includes('application/octet-stream') ||
+      (response.headers.get('content-disposition') || '').includes('attachment')
+    ))) {
       return response.blob();
     }
 
@@ -153,10 +155,10 @@ async function customFetch(endpoint, options = {}) {
     }
 
     if (typeof data === 'object' && data !== null) {
-      return Promise.reject({ ...data, error: data.error || errorMessage });
+      return Promise.reject({ ...data, status: response.status, error: data.error || errorMessage });
     }
 
-    return Promise.reject({ error: errorMessage, originalData: data });
+    return Promise.reject({ error: errorMessage, status: response.status, originalData: data });
   } catch (error) {
     // Network errors
     console.error('Fetch Error:', error);

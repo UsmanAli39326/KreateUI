@@ -69,8 +69,8 @@ export default function MarketplacePage() {
                 if (templatesList) {
                     templatesList = templatesList.map(item => ({
                         ...item,
-                        id: item._id || item.id,
-                        image: item.imagePath ? (item.imagePath.startsWith('http') ? item.imagePath : marketplaceService.getStaticFile(item.imagePath)) : item.image,
+                        id: item.id || item._id,
+                        image: item.imagePath ? (item.imagePath.startsWith('http') ? item.imagePath : marketplaceService.getStaticFileUrl(item.imagePath)) : item.image,
                     }));
                 }
 

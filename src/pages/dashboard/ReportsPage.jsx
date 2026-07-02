@@ -48,43 +48,38 @@ export default function ReportsPage() {
     const navigate = useNavigate();
     const [page, setPage] = useState(1);
 
-    // useUserStats fetches stats + audit list in one shot
-    const { stats: rawStats, audits, isLoading: loading, refetch } = useUserStats({
+    // useUserStats fetches stats + audit list + compliance in one shot
+    const { stats: rawStats, audits, complianceReport = { report: [] }, isLoading: loading, refetch } = useUserStats({
         auditPage: page,
         auditLimit: 10,
     });
 
     // Derive WCAG-level scores from the real accessibilityScore
-    const accessScore = rawStats?.accessibilityScore?.value ?? rawStats?.accessibilityScore ?? 0;
+    // Extract the latest audit's score instead of the global average for the compliance report
+    const latestAudit = audits && audits.length > 0 ? audits[0] : null;
+    const accessScore = latestAudit?.summary?.wcagScore?.total ?? latestAudit?.summary?.currentScore ?? rawStats?.accessibilityScore?.value ?? rawStats?.accessibilityScore ?? 0;
+    
     const stats = {
         overall: { score: accessScore, trend: rawStats?.accessibilityScore?.trend ?? 0 },
         levelA: { score: accessScore },
-        levelAA: { score: rawStats?.levelAA ?? Math.round(accessScore * 0.9) },
-        levelAAA: { score: rawStats?.levelAAA ?? Math.round(accessScore * 0.7) },
+        levelAA: { score: rawStats?.levelAA ?? Math.round(accessScore * 0.9), trend: 0 },
+        levelAAA: { score: rawStats?.levelAAA ?? Math.round(accessScore * 0.7), trend: 0 },
     };
 
     const audit = audits || [];
     const totalPages = Math.ceil((rawStats?.totalAudits || audit.length) / 10) || 1;
 
+    const complianceList = complianceReport.report || [];
+    const reportUrl = complianceReport.url;
 
-
-    const handleExportPdf = async (id = 1) => {
-        try {
-            toast.info("Generating PDF report...", "Exporting");
-            const blob = await auditService.getPdfReport(id);
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = `audit-report-${id}.pdf`;
-            a.click();
-            window.URL.revokeObjectURL(url);
-            toast.success("PDF report downloaded successfully!", "Success");
-        } catch (err) {
-            console.error("Failed to download PDF", err);
-            toast.error("Failed to generate PDF compliance report.", "Export Error");
-        }
-    };
-
+    const [compliancePage, setCompliancePage] = useState(1);
+    const [selectedGuideline, setSelectedGuideline] = useState(null);
+    const complianceItemsPerPage = 5;
+    const paginatedComplianceList = complianceList.slice(
+        (compliancePage - 1) * complianceItemsPerPage,
+        compliancePage * complianceItemsPerPage
+    );
+    const totalCompliancePages = Math.ceil(complianceList.length / complianceItemsPerPage) || 1;
     const handleDeleteAudit = async (id) => {
         try {
             await auditService.deleteAudit(id);
@@ -103,18 +98,13 @@ export default function ReportsPage() {
                 <div className="flex flex-wrap justify-between items-end gap-6">
                     <div className="flex flex-col gap-2">
                         <h2 className="text-4xl font-black tracking-tight text-text-1">WCAG 2.1 Compliance Report</h2>
-                        <p className="text-text-2 text-lg">Comprehensive audit for accessibility & usability optimization</p>
+                        <p className="text-text-2 text-lg">
+                            Comprehensive audit for accessibility & usability optimization
+                            {reportUrl && <span className="ml-2 font-mono text-sm px-2 py-1 bg-surface-1 border border-border-1 rounded-md text-accent-1">{reportUrl}</span>}
+                        </p>
                     </div>
                     <div className="flex gap-3">
-                        <Button 
-                            variant="secondary" 
-                            icon={<span className="material-symbols-outlined text-lg">download</span>} 
-                            onClick={() => handleExportPdf(audit[0]?.id)}
-                            disabled={!audit || audit.length === 0}
-                            title={(!audit || audit.length === 0) ? "Run an audit first." : ""}
-                        >
-                            Export PDF
-                        </Button>
+
                         <Button 
                             variant="primary" 
                             icon={<span className="material-symbols-outlined text-lg">refresh</span>} 
@@ -196,7 +186,7 @@ export default function ReportsPage() {
                 {/* Table Header */}
                 <div className="flex items-center justify-between mb-4">
                     <h3 className="text-xl font-bold tracking-tight text-text-1">Success Criteria Audit</h3>
-                    <p className="text-xs text-text-3 font-medium uppercase tracking-widest">Displaying 5 of 78 Guidelines</p>
+                    <p className="text-xs text-text-3 font-medium uppercase tracking-widest">Displaying {Math.min(complianceItemsPerPage, complianceList.length)} of {complianceList.length} Guidelines</p>
                 </div>
 
                 {/* Detailed Audit Table */}
@@ -213,7 +203,7 @@ export default function ReportsPage() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-border-1">
-                            {audit.map((row) => (
+                            {paginatedComplianceList.map((row) => (
                                 <tr key={row.id} className="hover:bg-surface-2 transition-colors">
                                     <td className="px-6 py-5 font-mono text-xs text-accent-1 font-bold">{row.id}</td>
                                     <td className="px-6 py-5">
@@ -235,7 +225,13 @@ export default function ReportsPage() {
                                             }`}>{row.impact}</span>
                                     </td>
                                     <td className="px-6 py-5 text-right">
-                                        <button className="text-accent-1 text-xs font-bold hover:underline">
+                                        <button 
+                                            className="text-accent-1 text-xs font-bold hover:underline"
+                                            onClick={() => {
+                                                if (row.status === 'Pass') setSelectedGuideline(row);
+                                                else navigate(`/dashboard/fix`);
+                                            }}
+                                        >
                                             {row.status === 'Pass' ? 'Details' : 'Fix Guidance'}
                                         </button>
                                     </td>
@@ -244,29 +240,79 @@ export default function ReportsPage() {
                         </tbody>
                     </table>
                     <div className="px-6 py-4 bg-bg-0 border-t border-border-1 flex justify-between items-center">
-                        <span className="text-xs text-text-3">Showing page {page} of {totalPages}</span>
-                        <div className="flex gap-2">
-                            <button 
-                                className="size-8 flex items-center justify-center rounded border border-border-1 text-text-3 disabled:opacity-50 hover:bg-surface-2 transition-colors" 
-                                disabled={page === 1}
-                                onClick={() => setPage(p => Math.max(1, p - 1))}
-                            >
-                                <span className="material-symbols-outlined text-sm">chevron_left</span>
-                            </button>
-                            <button className="size-8 flex items-center justify-center rounded bg-accent-1 text-white text-xs font-bold">{page}</button>
-                            <button 
-                                className="size-8 flex items-center justify-center rounded border border-border-1 text-text-3 disabled:opacity-50 hover:bg-surface-2 transition-colors"
-                                disabled={page >= totalPages}
-                                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                            >
-                                <span className="material-symbols-outlined text-sm">chevron_right</span>
-                            </button>
-                        </div>
+                        <span className="text-xs text-text-3">Showing {paginatedComplianceList.length} of {complianceList.length} Guidelines</span>
+                        {totalCompliancePages > 1 && (
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={() => setCompliancePage(p => Math.max(1, p - 1))}
+                                    disabled={compliancePage === 1}
+                                    className="px-3 py-1 bg-surface-1 text-text-2 rounded border border-border-1 disabled:opacity-50 text-xs font-medium hover:bg-surface-2 transition-colors"
+                                >
+                                    Prev
+                                </button>
+                                <span className="text-xs text-text-3 self-center px-2">Page {compliancePage} of {totalCompliancePages}</span>
+                                <button
+                                    onClick={() => setCompliancePage(p => Math.min(totalCompliancePages, p + 1))}
+                                    disabled={compliancePage === totalCompliancePages}
+                                    className="px-3 py-1 bg-surface-1 text-text-2 rounded border border-border-1 disabled:opacity-50 text-xs font-medium hover:bg-surface-2 transition-colors"
+                                >
+                                    Next
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </div>
 
 
             </div>
+
+            {selectedGuideline && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+                    <div className="bg-surface-1 border border-border-1 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden animate-[fade-in-up_0.2s_ease-out]">
+                        <div className="flex justify-between items-center p-6 border-b border-border-1 bg-surface-2">
+                            <h3 className="text-xl font-bold text-text-1">Guideline Details</h3>
+                            <button 
+                                onClick={() => setSelectedGuideline(null)}
+                                className="text-text-3 hover:text-text-1 transition-colors"
+                            >
+                                <span className="material-symbols-outlined">close</span>
+                            </button>
+                        </div>
+                        <div className="p-6 space-y-6">
+                            <div>
+                                <div className="text-xs text-accent-1 font-bold mb-1 font-mono">{selectedGuideline.id}</div>
+                                <h4 className="text-lg font-black text-text-1">{selectedGuideline.criterion}</h4>
+                            </div>
+                            
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="bg-surface-2 rounded-xl p-4 border border-border-1">
+                                    <div className="text-xs text-text-3 font-bold uppercase mb-2">Status</div>
+                                    <StatusBadge status={selectedGuideline.status} />
+                                </div>
+                                <div className="bg-surface-2 rounded-xl p-4 border border-border-1">
+                                    <div className="text-xs text-text-3 font-bold uppercase mb-1">Impact</div>
+                                    <div className="font-bold text-text-1">{selectedGuideline.impact === "Minor" ? "None (Passed)" : selectedGuideline.impact}</div>
+                                </div>
+                            </div>
+                            
+                            <div className="bg-success/5 border border-success/20 rounded-xl p-5">
+                                <h5 className="text-success font-bold text-sm mb-2 flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-sm">verified</span>
+                                    AI Verification Complete
+                                </h5>
+                                <p className="text-text-2 text-sm leading-relaxed">
+                                    {selectedGuideline.description !== "No issues found" ? selectedGuideline.description : "Our automated engine successfully verified that your website complies with this WCAG criterion. No further manual intervention is required for this specific rule."}
+                                </p>
+                            </div>
+                        </div>
+                        <div className="p-6 border-t border-border-1 bg-surface-2 flex justify-end">
+                            <button className="px-4 py-2 bg-surface-3 text-text-1 rounded-lg text-sm font-bold transition-colors" onClick={() => setSelectedGuideline(null)}>
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </DashboardShell>
     );
 }

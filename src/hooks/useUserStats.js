@@ -17,6 +17,7 @@ export function useUserStats({
   const [stats, setStats] = useState(null);
   const [scanHistory, setScanHistory] = useState(null);
   const [audits, setAudits] = useState([]);
+  const [complianceReport, setComplianceReport] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -24,10 +25,11 @@ export function useUserStats({
     setIsLoading(true);
     setError(null);
     try {
-      const [statsRes, historyRes, auditsRes] = await Promise.all([
+      const [statsRes, historyRes, auditsRes, complianceRes] = await Promise.all([
         userService.getStats(),
         userService.getScanHistory(historyDays),
         userService.getAudits(auditPage, auditLimit),
+        userService.getComplianceReport(),
       ]);
 
       setStats(statsRes?.data || statsRes);
@@ -43,6 +45,7 @@ export function useUserStats({
 
       const auditList = auditsRes?.data?.audits || auditsRes?.audits || [];
       setAudits(auditList);
+      setComplianceReport(complianceRes?.data || complianceRes || []);
     } catch (err) {
       console.error('[useUserStats] Failed:', err);
       setError(err?.error || err?.message || 'Failed to load dashboard data.');
@@ -55,5 +58,5 @@ export function useUserStats({
     fetchData();
   }, [fetchData]);
 
-  return { stats, scanHistory, audits, isLoading, error, refetch: fetchData };
+  return { stats, scanHistory, audits, complianceReport, isLoading, error, refetch: fetchData };
 }

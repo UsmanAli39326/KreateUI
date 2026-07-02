@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 export default function WcagBreakdown({ score, onDownloadReport }) {
     const getGradeColor = (grade) => {
@@ -39,14 +40,11 @@ export default function WcagBreakdown({ score, onDownloadReport }) {
                 ))}
             </div>
 
-            <div className="mt-6 pt-6 border-t border-border-1">
-                <button 
-                    className="flex items-center gap-2 text-xs text-accent-1 font-bold hover:underline w-full justify-center"
-                    onClick={onDownloadReport}
-                >
-                    <span className="material-symbols-outlined text-sm">download</span>
-                    Download Compliance Report
-                </button>
+            <div className="mt-6 pt-4 border-t border-border-1">
+                <Link to="/dashboard/reports" className="flex items-center justify-center gap-2 text-accent-1 hover:text-accent-hover text-sm font-bold transition-colors">
+                    View Full Compliance Report
+                    <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                </Link>
             </div>
         </div>
     );

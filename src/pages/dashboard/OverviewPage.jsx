@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import DashboardShell from "@/components/Dashboard/DashboardShell";
 import Breadcrumbs from "@/components/Dashboard/BreadCrumbs";
 import StatsCard from "@/components/Dashboard/StatsCard";
-import ScanVelocityChart from "@/components/Dashboard/ScanVelocityChart";
+import ComplianceTrendChart from "@/components/Dashboard/ComplianceTrendChart";
 import CriticalIssues from "@/components/Dashboard/CriticalIssues";
 import ProjectsTable from "@/components/Dashboard/ProjectsTable";
 import Button from "@/components/Common/Button";
@@ -189,7 +189,7 @@ export default function OverviewPage() {
                         <Skeleton className="h-[350px] rounded-xl" />
                     </div>
                 ) : scanHistory && (
-                    <ScanVelocityChart data={scanHistory} />
+                    <ComplianceTrendChart data={scanHistory} />
                 )}
                 
                 <CriticalIssues issues={

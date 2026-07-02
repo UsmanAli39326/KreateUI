@@ -14,6 +14,7 @@ import FixIssuePage from "./pages/dashboard/FixIssuePage.jsx";
 import ReportsPage from "./pages/dashboard/ReportsPage.jsx";
 import SettingsPage from "./pages/dashboard/SettingsPage.jsx";
 import ProjectsPage from "./pages/dashboard/ProjectsPage.jsx";
+import UploadTemplatePage from "./pages/dashboard/UploadTemplatePage.jsx";
 import AdminPage from "./pages/dashboard/AdminPage.jsx";
 import IssuesPage from "./pages/dashboard/IssuesPage.jsx";
 import AboutContent from "./pages/About.jsx";
@@ -56,6 +57,7 @@ const router = createBrowserRouter([
       { path: "reports", element: <ReportsPage /> },
       { path: "settings", element: <SettingsPage /> },
       { path: "projects", element: <ProjectsPage /> }, // Add ProjectsPage route
+      { path: "upload-template", element: <UploadTemplatePage /> },
       { path: "issues", element: <IssuesPage /> },
       { path: "admin", element: <AdminPage /> },
     ],

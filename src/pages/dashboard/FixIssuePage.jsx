@@ -260,9 +260,17 @@ export default function FixIssuePage() {
 
                 {/* Left Sidebar: AI Recommendations */}
                 <aside className="w-[30%] min-w-[320px] border-r border-border-1 flex flex-col bg-surface-2 overflow-y-auto">
-                    <div className="p-4 border-b border-border-1 flex justify-between items-center bg-bg-1/50 sticky top-0 z-10 backdrop-blur-md">
-                        <div>
-                            <h1 className="text-text-1 text-base font-bold">AI Suggestions</h1>
+                    <div className="p-4 border-b border-border-1 flex flex-col gap-3 bg-bg-1/50 sticky top-0 z-10 backdrop-blur-md">
+                        <button 
+                            onClick={() => navigate(-1)} 
+                            className="flex items-center gap-1.5 text-text-3 hover:text-text-1 transition-colors text-sm font-medium w-fit"
+                        >
+                            <span className="material-symbols-outlined text-sm">arrow_back</span>
+                            Back to previous page
+                        </button>
+                        <div className="flex justify-between items-center">
+                            <div>
+                                <h1 className="text-text-1 text-base font-bold">AI Suggestions</h1>
                             <p className="text-text-3 text-xs">
                                 {appliedCount > 0
                                     ? <span className="text-accent-1 font-semibold">{appliedCount} selected</span>
@@ -279,6 +287,7 @@ export default function FixIssuePage() {
                         >
                             <span className="material-symbols-outlined">refresh</span>
                         </button>
+                        </div>
                     </div>
 
                     <div className="flex-1 pb-20">

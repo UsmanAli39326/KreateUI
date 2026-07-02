@@ -37,7 +37,6 @@ export default function RecentScans({ scans }) {
                 <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-wider text-text-3 text-center">
                   Total Issues
                 </th>
-                <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-wider text-text-3">Status</th>
                 <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-wider text-text-3"></th>
               </tr>
             </thead>
@@ -64,10 +63,6 @@ export default function RecentScans({ scans }) {
                     ) : (
                       <IssuesBadge count={row.issuesCount} />
                     )}
-                  </td>
-
-                  <td className="px-6 py-5">
-                    <StatusPill status={row.status} />
                   </td>
 
                   <td className="px-6 py-5 text-right">

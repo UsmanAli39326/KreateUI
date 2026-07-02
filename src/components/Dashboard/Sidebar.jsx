@@ -2,7 +2,6 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import nav from "@/assets/api/dashboardNavbar.json";
-import UpgradeCard from "@/components/Dashboard/UpgradeCard";
 
 function Icon({ name }) {
   const cls = "size-5";
@@ -90,7 +89,7 @@ function Icon({ name }) {
 
 export default function Sidebar({ active, onClose }) {
   const { logout, isAdmin } = useAuth();
-  const topItems = nav.filter((n) => n.id !== "settings");
+  const topItems = nav.filter((n) => n.id !== "settings" && n.id !== "issues");
   const settings = nav.find((n) => n.id === "settings");
 
   const linkClass = (isActive) =>
@@ -204,10 +203,6 @@ export default function Sidebar({ active, onClose }) {
         </button>
       </nav>
 
-      {/* Upgrade */}
-      <div className="p-4 border-t border-border-1">
-        <UpgradeCard />
-      </div>
     </aside>
   );
 }

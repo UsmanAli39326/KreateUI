@@ -38,9 +38,11 @@ export default function AnalyzeDashboard() {
         const audits = res?.data?.audits || res?.audits || [];
         const mappedScans = audits.map(audit => ({
           ...audit,
-          url: audit.name || "Unknown",
-          date: audit.createdAt || "Unknown",
-          score: audit.score || 0
+          url: audit.name || audit.url || audit.targetUrl || "Unknown",
+          scannedAt: audit.createdAt || audit.scannedAt,
+          score: audit.score || audit.summary?.currentScore || 0,
+          issuesCount: audit.summary?.issueCount || audit.issuesCount || 0,
+          status: audit.status || "failed"
         }));
         setScans(mappedScans);
       })

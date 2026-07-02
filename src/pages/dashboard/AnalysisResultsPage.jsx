@@ -332,7 +332,8 @@ export default function AnalysisResultsPage() {
         if (!auditId) return;
         try {
             toast.info("Generating HTML report...", "Processing");
-            const blob = await auditService.getHtmlReport(auditId);
+            const htmlText = await auditService.getHtmlReport(auditId);
+            const blob = new Blob([htmlText], { type: 'text/html' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
@@ -627,9 +628,6 @@ export default function AnalysisResultsPage() {
                             Download a comprehensive PDF report including all identified issues and remediation steps.
                         </p>
                         <div className="flex flex-col gap-3">
-                            <Button variant="secondary" fullWidth icon={<span className="material-symbols-outlined">picture_as_pdf</span>} onClick={handleDownloadPdf}>
-                                Download PDF Report
-                            </Button>
                             <Button variant="tertiary" fullWidth icon={<span className="material-symbols-outlined">html</span>} onClick={handleDownloadHtml}>
                                 Download HTML Report
                             </Button>
