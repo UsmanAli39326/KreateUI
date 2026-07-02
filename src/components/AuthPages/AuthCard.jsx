@@ -34,7 +34,7 @@ export default function AuthCard({
 
             {/* Auth Card */}
             <Card className="bg-surface-1 border border-border-1 shadow-xl rounded-xl p-8">
-                {/* Social Logins */}
+                {/* Social Logins - Hidden for now
                 <div className="flex flex-col gap-3">
                     <Button
                         variant="secondary"
@@ -59,7 +59,6 @@ export default function AuthCard({
                     </Button>
                 </div>
 
-                {/* Divider */}
                 <div className="relative my-8">
                     <div className="absolute inset-0 flex items-center">
                         <div className="w-full border-t border-gray-200 dark:border-border-dark" />
@@ -70,6 +69,7 @@ export default function AuthCard({
                         </span>
                     </div>
                 </div>
+                */}
 
                 {/* Email Form */}
                 <form onSubmit={handleEmailSubmit} className="space-y-6">

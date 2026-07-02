@@ -1,5 +1,6 @@
 // src/pages/Contact/sections/DocsPanel.jsx
 import React from "react";
+import { Link } from "react-router-dom";
 
 export default function DocsPanel() {
   return (
@@ -14,12 +15,12 @@ export default function DocsPanel() {
           </p>
         </div>
 
-        <a className="inline-flex items-center gap-2 text-primary font-bold text-sm hover:underline" href="#">
+        <Link className="inline-flex items-center gap-2 text-primary font-bold text-sm hover:underline" to="/documentation">
           View Documentation
           <span className="material-symbols-outlined text-[20px]" aria-hidden="true">
             arrow_forward
           </span>
-        </a>
+        </Link>
       </div>
     </div>
   );

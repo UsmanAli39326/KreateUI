@@ -21,6 +21,7 @@ import AboutContent from "./pages/About.jsx";
 import ContactPageContent from "./pages/ContactPage.jsx";
 import MarketplacePage from "./pages/MarketplacePage.jsx";
 import TemplateDetailPage from "./pages/TemplateDetailPage.jsx";
+import DocumentationPage from "./pages/DocumentationPage.jsx";
 // import PricingPage from "./pages/PricingPage.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
 import ProtectedRoute from "./components/Common/ProtectedRoute.jsx";
@@ -40,6 +41,8 @@ const router = createBrowserRouter([
       { path: "/contact", element: <ContactPageContent /> },
       { path: "/marketplace", element: <MarketplacePage /> },
       { path: "/marketplace/:templateId", element: <TemplateDetailPage /> },
+      { path: "/documentation", element: <DocumentationPage /> },
+      { path: "/docs", element: <DocumentationPage /> },
       // { path: "/pricing", element: <PricingPage /> },
       // Dashboard routes nested under Layout
       // add more app pages here

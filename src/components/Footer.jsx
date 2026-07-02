@@ -17,7 +17,7 @@ export default function Footer() {
             </p>
           </div>
 
-          <div>
+          {/* <div>
             <h4 className="font-bold text-white mb-6 uppercase tracking-wider text-sm">Product</h4>
             <ul className="space-y-4 text-sm text-white/60">
               <li><Link to="/features" className="hover:text-primary transition-colors">Features</Link></li>
@@ -25,9 +25,9 @@ export default function Footer() {
               <li><Link to="/pricing" className="hover:text-primary transition-colors">Pricing</Link></li>
               <li><Link to="/changelog" className="hover:text-primary transition-colors">Changelog</Link></li>
             </ul>
-          </div>
+          </div> */}
 
-          <div>
+          {/* <div>
             <h4 className="font-bold text-white mb-6 uppercase tracking-wider text-sm">Resources</h4>
             <ul className="space-y-4 text-sm text-white/60">
               <li><Link to="/docs" className="hover:text-primary transition-colors">Documentation</Link></li>
@@ -35,16 +35,16 @@ export default function Footer() {
               <li><Link to="/blog" className="hover:text-primary transition-colors">Blog</Link></li>
               <li><Link to="/community" className="hover:text-primary transition-colors">Community</Link></li>
             </ul>
-          </div>
+          </div> */}
 
-          <div>
+          {/* <div>
             <h4 className="font-bold text-white mb-6 uppercase tracking-wider text-sm">Legal</h4>
             <ul className="space-y-4 text-sm text-white/60">
               <li><Link to="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link></li>
               <li><Link to="/terms" className="hover:text-primary transition-colors">Terms of Service</Link></li>
               <li><Link to="/security" className="hover:text-primary transition-colors">Security</Link></li>
             </ul>
-          </div>
+          </div> */}
         </div>
 
         <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-6">
