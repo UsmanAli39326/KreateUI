@@ -4,7 +4,7 @@ import Showcase from "../components/LandingPage/Showcase";
 // import AICapabilities from "../components/LandingPage/AICapabilities";
 
 
-import FAQ from "../components/LandingPage/Faq";
+import FAQ from "../components/LandingPage/FAQ";
 import FinalCTA from "../components/LandingPage/FinalCta";
 import Hero from "../components/LandingPage/Hero";
 import Workflow from "../components/LandingPage/Workflow";
